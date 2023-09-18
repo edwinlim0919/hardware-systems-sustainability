@@ -4,6 +4,12 @@ Usable scripting for running DeathStarBench's HotelReservation application with 
 
 ## Installation
 
+First ssh into your CloudLab master node with the -A option to cache public keys in your ssh-agent
+#### Example
+```bash
+ssh -A edwinlim@ms0415.utah.cloudlab.us
+```
+
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
 
 ```bash
