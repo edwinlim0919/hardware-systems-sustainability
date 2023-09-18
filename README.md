@@ -1,4 +1,6 @@
-# Usable scripting for running the Intel IPU Emulator with the HotelReservation benchmark
+# gRPC HotelReservation + Intel IPU Scripting
+
+Usable scripting for running DeathStarBench's HotelReservation application with Intel's IPU emulator
 
 ## Installation
 
