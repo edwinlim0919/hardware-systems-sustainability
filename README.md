@@ -4,17 +4,24 @@ Usable scripting for running DeathStarBench's HotelReservation application with 
 
 ## Installation
 
-First ssh into your CloudLab master node with the -A option to cache public keys in your ssh-agent
-#### Example
+First, ssh into your CloudLab master node with the -A option to cache public keys in your ssh-agent. An example is shown below, but you will need your own CloudLab account and experiment cluster.
 ```bash
 ssh -A edwinlim@ms0415.utah.cloudlab.us
 ```
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
-
+Then, go to the /dev/shm directory and clone the repository.
 ```bash
-pip install foobar
+cd /dev/shm
+git clone git@github.com:edwinlim0919/grpc-hotel-ipu.git 
 ```
+
+Head into the /grpc-hotel-ipu directory and setup some a bash environment.
+```bash
+cd grpc-hotel-ipu
+./env.sh
+```
+
+Next, install the dependencies needed to run DeathStarBench
 
 ## Usage
 
