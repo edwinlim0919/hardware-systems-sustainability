@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Installation script for some basic bash needs
 
-yes | sudo apt-get update
-yes | sudo apt-get install vim
-yes | sudo apt-get install tmux
+sudo apt-get update
+sudo apt-get install vim
+sudo apt-get install tmux
 
 CURR_DIR=$(pwd)
 cp ${CURR_DIR}/dotfiles/bashrc ~/.bashrc
