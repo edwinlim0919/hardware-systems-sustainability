@@ -19,9 +19,21 @@ def setup_docker_swarm():
     logger.info('----------------')
     logger.info('Setting up docker swarm...')
     logger.info('advertise-addr: ' + advertise_addr)
-    #logger.info(docker_swarm_init_cmd)
-    #os.system(docker_swarm_init_cmd)
-    #subprocess.Popen(docker_swarm_init_cmd, shell=True).wait()
+    logger.info('init-cmd: ' + docker_swarm_init_cmd)
+    subprocess.Popen(docker_swarm_init_cmd.split()).wait()
+    logger.info('Set up docker swarm successfully.')
+    logger.info('----------------')
+
+def leave_docker_swarm(is_manager):
+    docker_swarm_leave_cmd = "sudo docker swarm leave --force"
+
+    logger.info('----------------')
+    logger.info('Leaving docker swarm...')
+    if is_manager:
+        logger.info('I am a manager! Waiting for all non-manager nodes to leave...')
+        # TODO: Make sure all non-manager nodes have left swarm first
+    subprocess.Popen(docker_swarm_leave_cmd.split()).wait()
+    logger.info('Left swarm successfully.')
     logger.info('----------------')
 
 if __name__ == '__main__':
@@ -30,17 +42,17 @@ if __name__ == '__main__':
                         dest='setup_docker_swarm',
                         action='store_true',
                         help='specify arg to set up docker swarm')
-    #parser.add_argument('--advertise-addr',
-    #                    dest='advertise_addr',
-    #                    type=str,
-    #                    help='advertised address for the docker swarm')
+    parser.add_argument('--leave-docker-swarm',
+                        dest='leave_docker_swarm',
+                        action='store_true',
+                        help='specify arg to leave docker swarm')
+    parser.add_argument('--is-manager',
+                        dest='is_manager',
+                        action='store_true',
+                        help='specify arg if current docker node is a manager')
     args = parser.parse_args()
 
     if args.setup_docker_swarm:
-        #if (args.advertise_addr is None or
-        #    not isinstance(args.advertise_addr, str) or
-        #    not utils.validate_ip(args.advertise_addr)):
-        #    raise ValueError('advertise-addr IP address in string format is required for setting up a docker swarm')
         setup_docker_swarm()
-    #logger.info('--------------')
-    #logger.info('Hello World!')
+    if args.leave_docker_swarm:
+        leave_docker_swarm(args.is_manager)
