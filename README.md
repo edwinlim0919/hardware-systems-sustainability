@@ -25,7 +25,6 @@ source ./env.sh
 Next, install the dependencies needed to run DeathStarBench.
 Press "y" and enter whenever prompted.
 ```bash
-cd scripts
 source ./setup.sh
 ```
 
