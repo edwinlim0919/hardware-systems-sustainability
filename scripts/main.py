@@ -20,7 +20,10 @@ def setup_docker_swarm():
     logger.info('Setting up docker swarm...')
     logger.info('advertise-addr: ' + advertise_addr)
     logger.info('init-cmd: ' + docker_swarm_init_cmd)
+    logger.info('Initializing docker swarm...')
     subprocess.Popen(docker_swarm_init_cmd.split()).wait()
+    logger.info('Starting local registry on this node...')
+
     logger.info('Set up docker swarm successfully.')
     logger.info('----------------')
 
