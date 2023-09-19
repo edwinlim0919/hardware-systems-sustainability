@@ -6,7 +6,7 @@ sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-
 sudo chmod +x /usr/local/bin/docker-compose
 sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
-wget https://bootstrap.pypa.io/get-pip.py scripts/get-pip.py
+wget -O scripts/get-pip.py https://bootstrap.pypa.io/get-pip.py
 python3 ./scripts/get-pip.py
 setenv PATH "{$PATH}:/users/`whoami`/.local/bin"
 pip3 install asyncio aiohttp
