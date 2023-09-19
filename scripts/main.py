@@ -13,7 +13,7 @@ logger = logging.getLogger('grpc-hotel-ipu')
 def setup_docker_swarm(advertise_addr):
     logger.info('----------------')
     logger.info('Setting up docker swarm...')
-    logger.info('advertise-addr: ' + str())
+    logger.info('advertise-addr: ' + advertise_addr)
     logger.info('----------------')
 
 if __name__ == '__main__':
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     if args.setup_docker_swarm:
         if (args.advertise_addr is None or
             not isinstance(args.advertise_addr, str) or
-            not ):
+            not utils.validate_ip(args.advertise_addr)):
             raise ValueError('advertise-addr IP address in string format is required for setting up a docker swarm')
         setup_docker_swarm(args.advertise_addr)
     #logger.info('--------------')
