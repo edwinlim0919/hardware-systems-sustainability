@@ -1,0 +1,4 @@
+DeathStarBench/
+scripts/get-docker.sh
+scripts/get-pip.py
+*.swp
