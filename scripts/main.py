@@ -4,6 +4,7 @@ import sys
 import os
 import argparse
 import logging
+import subprocess
 
 import utils
 
@@ -11,9 +12,16 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('grpc-hotel-ipu')
 
 def setup_docker_swarm(advertise_addr):
+    docker_swarm_init_cmd = "sudo docker swarm init " + \
+                            "--advertise-addr " + advertise_addr
+    utils.parse_ifconfig(logger)
+
     logger.info('----------------')
     logger.info('Setting up docker swarm...')
     logger.info('advertise-addr: ' + advertise_addr)
+    #logger.info(docker_swarm_init_cmd)
+    #os.system(docker_swarm_init_cmd)
+    #subprocess.Popen(docker_swarm_init_cmd, shell=True).wait()
     logger.info('----------------')
 
 if __name__ == '__main__':
