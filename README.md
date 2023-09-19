@@ -16,12 +16,17 @@ git clone git@github.com:edwinlim0919/grpc-hotel-ipu.git
 ```
 
 Head into the /grpc-hotel-ipu directory and setup some a bash environment.
+Press "y" and enter whenever prompted.
 ```bash
 cd grpc-hotel-ipu
 ./env.sh
 ```
 
 Next, install the dependencies needed to run DeathStarBench
+```bash
+cd scripts
+./setup.sh
+```
 
 ## Usage
 
