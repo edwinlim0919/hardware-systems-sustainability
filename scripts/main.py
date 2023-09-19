@@ -4,7 +4,8 @@ import sys
 import os
 import argparse
 import logging
-import ipaddress
+
+import utils
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('grpc-hotel-ipu')
