@@ -22,7 +22,8 @@ cd grpc-hotel-ipu
 ./env.sh
 ```
 
-Next, install the dependencies needed to run DeathStarBench
+Next, install the dependencies needed to run DeathStarBench.
+Press "y" and enter whenever prompted.
 ```bash
 cd scripts
 ./setup.sh
