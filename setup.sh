@@ -9,6 +9,7 @@ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 wget -O scripts/get-pip.py https://bootstrap.pypa.io/get-pip.py
 python3 ./scripts/get-pip.py
 setenv PATH "{$PATH}:/users/`whoami`/.local/bin"
+sudo apt install python3-pip
 pip3 install asyncio aiohttp
 
 sudo apt-get install libssl-dev -y
