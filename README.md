@@ -1,6 +1,6 @@
 # gRPC HotelReservation + Intel IPU Scripting
 
-Usable scripting for running DeathStarBench's HotelReservation application with Intel's IPU emulator
+Usable scripting for running DeathStarBench's HotelReservation application in tandem with Intel's IPU emulator on CloudLab.
 
 ## Installation
 
