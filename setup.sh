@@ -11,7 +11,7 @@ python3 ./scripts/get-pip.py
 setenv PATH "{$PATH}:/users/`whoami`/.local/bin"
 sudo apt install python3-pip
 sudo pip3 install asyncio aiohttp
-sudo pip3 install ifparser
+#sudo pip3 install ifparser
 
 sudo apt-get install libssl-dev -y
 sudo apt-get install libz-dev -y
