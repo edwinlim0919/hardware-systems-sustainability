@@ -45,6 +45,10 @@ if __name__ == '__main__':
                         dest='setup_docker_swarm',
                         action='store_true',
                         help='specify arg to set up docker swarm')
+    parser.add_argument('--published',
+                        dest='published',
+                        type=int,
+                        help='specify the published arg for creating docker registry service')
     parser.add_argument('--leave-docker-swarm',
                         dest='leave_docker_swarm',
                         action='store_true',
@@ -56,6 +60,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.setup_docker_swarm:
-        setup_docker_swarm()
+        #setup_docker_swarm()
+        if args.published is None:
+            raise ValueError('published arg should be specified for creating docker registry service')
     if args.leave_docker_swarm:
         leave_docker_swarm(args.is_manager)
