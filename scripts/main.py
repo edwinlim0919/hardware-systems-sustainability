@@ -24,19 +24,18 @@ def setup_docker_swarm(args):
                                                                  args.target,
                                                                  args.registry)
 
-    print(docker_swarm_init_cmd)
-    print(docker_service_create_cmd)
-
-    #logger.info('----------------')
-    #logger.info('Setting up docker swarm...')
-    #logger.info('advertise-addr: ' + advertise_addr)
-    #logger.info('init-cmd: ' + docker_swarm_init_cmd)
-    #logger.info('Initializing docker swarm...')
-    #subprocess.Popen(docker_swarm_init_cmd.split()).wait()
-    #logger.info('Starting local registry on this node...')
-
-    #logger.info('Set up docker swarm successfully.')
-    #logger.info('----------------')
+    logger.info('----------------')
+    logger.info('Setting up docker swarm...')
+    logger.info('advertise-addr: ' + advertise_addr)
+    logger.info('Initializing docker swarm...')
+    subprocess.Popen(docker_swarm_init_cmd.split()).wait()
+    logger.info('Starting local registry on this node...')
+    logger.info('published: ' + str(args.published))
+    logger.info('target: ' + str(args.target))
+    logger.info('registry: ' + str(args.registry))
+    subprocess.Popen(docker_service_create_cmd.split()).wait()
+    logger.info('Set up docker swarm successfully.')
+    logger.info('----------------')
 
 def leave_docker_swarm(is_manager):
     docker_swarm_leave_cmd = 'sudo docker swarm leave --force'
