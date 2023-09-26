@@ -7,6 +7,7 @@ import logging
 import subprocess
 
 import utils
+import metadata
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -54,6 +55,21 @@ def leave_docker_swarm(is_manager):
 
 
 def setup_application(application_name, node_ssh_list):
+    application_name_upper = application_name.upper()
+    if application_name_upper not in metadata.application_info:
+        ValueError('specified application does not exist in metadata.appication_info')
+    application_info = metadata.application_info[application_name_upper]
+
+    curr_dir = os.getcwd()
+    node_ssh_list_path = curr_dir + '/../node-ssh-lists/' + node_ssh_list
+    if not os.path.isfile(node_ssh_list_path):
+        ValueError('specified ssh command file does not exist grpc-hotel-ipu/ssh-node-lists')
+
+    node_ssh_lines = [line.strip() for line in open(node_ssh_list_path).readlines()]
+
+    print(application_info)
+    print(node_ssh_list_path)
+    print(node_ssh_lines)
 
 
 def get_args():
