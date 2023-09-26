@@ -19,14 +19,12 @@ def setup_docker_swarm(args):
     docker_swarm_init_str = 'sudo docker swarm init ' + \
                             '--advertise-addr {0}'
     docker_swarm_init_cmd = docker_swarm_init_str.format(advertise_addr)
-
     docker_service_create_str = 'sudo docker service create ' + \
                                 '--name registry ' + \
                                 '--publish published={0},target={1} registry:{2}'
     docker_service_create_cmd = docker_service_create_str.format(args.published,
                                                                  args.target,
                                                                  args.registry)
-
     logger.info('----------------')
     logger.info('Setting up docker swarm...')
     logger.info('advertise-addr: ' + advertise_addr)
@@ -43,7 +41,6 @@ def setup_docker_swarm(args):
 
 def leave_docker_swarm(is_manager):
     docker_swarm_leave_cmd = 'sudo docker swarm leave --force'
-
     logger.info('----------------')
     logger.info('Leaving docker swarm...')
     if is_manager:
@@ -54,7 +51,7 @@ def leave_docker_swarm(is_manager):
     logger.info('----------------')
 
 
-def setup_application(application_name, node_ssh_list):
+def setup_application(application_name, replace_zip, node_ssh_list):
     application_name_upper = application_name.upper()
     if application_name_upper not in metadata.application_info:
         ValueError('specified application does not exist in metadata.appication_info')
@@ -64,13 +61,27 @@ def setup_application(application_name, node_ssh_list):
     node_ssh_list_path = curr_dir + '/../node-ssh-lists/' + node_ssh_list
     if not os.path.isfile(node_ssh_list_path):
         ValueError('specified ssh command file does not exist grpc-hotel-ipu/ssh-node-lists')
-
     node_ssh_lines = [line.strip() for line in open(node_ssh_list_path).readlines()]
 
-    print(application_info)
-    print(node_ssh_list_path)
-    print(node_ssh_lines)
+    # Zip the specified application into grpc-hotel-ipu/zipped-applications
+    application_dir_path = application_info['dir_path']
+    application_zip_path = '../zipped-applications/' + application_name + '.zip'
+    zip_str = 'zip -r {0} {1}'
+    zip_cmd = zip_str.format(application_zip_path,
+                             application_dir_path)
+    logger.info('----------------')
+    logger.info('Setting up ' + application_name_upper + '...')
+    if os.path.isfile(application_zip_path) and not replace_zip:
+        logger.info(application_zip_path + ' already exists and replace-zip not specified, skipping zip step')
+    else:
+        logger.info('zipping ' + application_zip_path)
+        subprocess.Popen(zip_cmd.split()).wait()
 
+    #print(application_info)
+    #print(node_ssh_list_path)
+    #print(node_ssh_lines)
+    #print(application_dir_path)
+    #print(zip_cmd)
 
 def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -112,6 +123,10 @@ def get_args():
                         dest='application_name',
                         type=str,
                         help='provide the name of the application')
+    parser.add_argument('--replace-zip',
+                        dest='replace_zip',
+                        action='store_true',
+                        help='replace if .zip already exists in grpc-hotel-ipu/zipped-applications')
     parser.add_argument('--node-ssh-list',
                         dest='node_ssh_list',
                         type=str,
@@ -136,7 +151,7 @@ if __name__ == '__main__':
             raise ValueError('application name must be provided for application setup')
         if args.node_ssh_list is None:
             raise ValueError('must provide file containing CloudLab ssh commands for application setup')
-        setup_application(args.application_name, args.node_ssh_list)
+        setup_application(args.application_name, args.replace_zip, args.node_ssh_list)
 
     if args.leave_docker_swarm:
         leave_docker_swarm(args.is_manager)
