@@ -8,8 +8,10 @@ import subprocess
 
 import utils
 
+
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('grpc-hotel-ipu')
+
 
 def setup_docker_swarm(args):
     advertise_addr = utils.parse_ifconfig(logger)
@@ -37,6 +39,7 @@ def setup_docker_swarm(args):
     logger.info('Set up docker swarm successfully.')
     logger.info('----------------')
 
+
 def leave_docker_swarm(is_manager):
     docker_swarm_leave_cmd = 'sudo docker swarm leave --force'
 
@@ -49,8 +52,14 @@ def leave_docker_swarm(is_manager):
     logger.info('Left swarm successfully.')
     logger.info('----------------')
 
-if __name__ == '__main__':
+
+def setup_application(application_name, node_ssh_list):
+
+
+def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
+
+    # Setting up docker swarm
     parser.add_argument('--setup-docker-swarm',
                         dest='setup_docker_swarm',
                         action='store_true',
@@ -67,6 +76,8 @@ if __name__ == '__main__':
                         dest='registry',
                         type=int,
                         help='specify the registry value for creating docker registry service')
+
+    # Leaving docker swarm
     parser.add_argument('--leave-docker-swarm',
                         dest='leave_docker_swarm',
                         action='store_true',
@@ -75,7 +86,26 @@ if __name__ == '__main__':
                         dest='is_manager',
                         action='store_true',
                         help='specify arg if current docker node is a manager')
-    args = parser.parse_args()
+
+    # Setting up DeathStarBench applications on CloudLab nodes
+    parser.add_argument('--setup-application',
+                        dest='setup_application',
+                        action='store_true',
+                        help='specify arg to setup specified application')
+    parser.add_argument('--application-name',
+                        dest='application_name',
+                        type=str,
+                        help='provide the name of the application')
+    parser.add_argument('--node-ssh-list',
+                        dest='node_ssh_list',
+                        type=str,
+                        help='provide name of file within grpc-hotel-ipu/node-ssh-lists/ containing CloudLab ssh commands')
+
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    args = get_args()
 
     if args.setup_docker_swarm:
         if args.published is None:
@@ -85,5 +115,12 @@ if __name__ == '__main__':
         if args.registry is None:
             raise ValueError('registry value should be specified for creating docker registry service')
         setup_docker_swarm(args)
+    if args.setup_application:
+        if args.application_name is None:
+            raise ValueError('application name must be provided for application setup')
+        if args.node_ssh_list is None:
+            raise ValueError('must provide file containing CloudLab ssh commands for application setup')
+        setup_application(args.application_name, args.node_ssh_list)
+
     if args.leave_docker_swarm:
         leave_docker_swarm(args.is_manager)
