@@ -10,3 +10,4 @@ cp ${CURR_DIR}/dotfiles/bashrc ~/.bashrc
 cp ${CURR_DIR}/dotfiles/bash_prompt ~/.bash_prompt
 cp ${CURR_DIR}/dotfiles/vimrc ~/.vimrc
 cp ${CURR_DIR}/dotfiles/tmux.conf ~/.tmux.conf
+cp ${CURR_DIR}/dotfiles/sshrc ~/.ssh/rc
