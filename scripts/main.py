@@ -77,6 +77,29 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         logger.info('zipping ' + application_zip_path)
         subprocess.Popen(zip_cmd.split()).wait()
 
+    # For each node in node_ssh_list, copy application zip and unzip
+    scp_str = 'scp {0} {1}@{2}:~/{3}'
+    unzip_str = 'ssh {0}@{1} \'unzip ~/{2}\''
+    uid = os.getlogin()
+    zip_file_name = utils.extract_path_end(application_zip_path)
+    logger.info('copying and unzipping ' + zip_file_name + ' to specified nodes')
+    for ssh_line in node_ssh_lines:
+        addr_only = utils.extract_ssh_addr(ssh_line)
+        scp_cmd = scp_str.format(application_zip_path,
+                                 uid,
+                                 addr_only,
+                                 zip_file_name)
+        unzip_cmd = unzip_str.format(uid,
+                                     addr_only,
+                                     zip_file_name)
+        #subprocess.Popen(scp_cmd.split()).wait()
+        #print(ssh_line)
+        #print(addr_only)
+        #print(uid)
+        #print(zip_file_name)
+        print(scp_cmd)
+        print(unzip_cmd)
+
     #print(application_info)
     #print(node_ssh_list_path)
     #print(node_ssh_lines)
