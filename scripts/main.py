@@ -64,11 +64,25 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     node_ssh_lines = [line.strip() for line in open(node_ssh_list_path).readlines()]
 
     # Zip the specified application into grpc-hotel-ipu/zipped-applications
+    #application_dir_path = application_info['dir_path']
+    #application_zip_path = '../zipped-applications/' + application_name + '.zip'
+    #zip_str = 'zip -r {0} {1}'
+    #zip_cmd = zip_str.format(application_zip_path,
+    #                         application_dir_path)
+    #logger.info('----------------')
+    #logger.info('Setting up ' + application_name_upper + '...')
+    #if os.path.isfile(application_zip_path) and not replace_zip:
+    #    logger.info(application_zip_path + ' already exists and replace-zip not specified, skipping zip step')
+    #else:
+    #    logger.info('zipping ' + application_zip_path)
+    #    subprocess.Popen(zip_cmd.split()).wait()
+
+    # Zip grpc-hotel-ipu/datacenter-soc into grpc-hotel-ipu/zipped-applications
     application_dir_path = application_info['dir_path']
     application_zip_path = '../zipped-applications/' + application_name + '.zip'
     zip_str = 'zip -r {0} {1}'
     zip_cmd = zip_str.format(application_zip_path,
-                             application_dir_path)
+                             '../datacenter-soc') # TODO: need to change this if ever using different versions on datacenter-soc for different projects
     logger.info('----------------')
     logger.info('Setting up ' + application_name_upper + '...')
     if os.path.isfile(application_zip_path) and not replace_zip:
