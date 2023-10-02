@@ -1,1 +1,2 @@
 python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
+python3 main.py --setup-application --application-name hotelreservation_grpc --replace-zip --node-ssh-list c6420_5_testing.txt
