@@ -1,0 +1,1 @@
+python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
