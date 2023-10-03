@@ -15,7 +15,7 @@ cd /dev/shm
 git clone git@github.com:edwinlim0919/grpc-hotel-ipu.git 
 ```
 
-After cloning, cd into the grpc-hotel-ipu directory and initialize the datacenter-soc submodule.
+After cloning, head into the /grpc-hotel-ipu directory and initialize the datacenter-soc submodule.
 ```bash
 cd grpc-hotel-ipu/
 git submodule init datacenter-soc/
@@ -23,11 +23,10 @@ git submodule update --init
 
 ```
 
-Head into the /grpc-hotel-ipu directory and setup some a bash environment.
+Next, still within the /grpc-hotel-ipu directory, set up some bash environment stuff.
 Press "y" and enter whenever prompted.
 You may need to log out of the node and log back in to see env changes take affect.
 ```bash
-cd grpc-hotel-ipu
 source ./env.sh
 ```
 
