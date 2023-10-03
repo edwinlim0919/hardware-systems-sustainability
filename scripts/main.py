@@ -93,7 +93,8 @@ def setup_application(application_name, replace_zip, node_ssh_list):
 
     # For each node in node_ssh_list, copy application zip and unzip
     scp_str = 'scp {0} {1}@{2}:~/{3}'
-    unzip_str = 'ssh {0}@{1} \'unzip ~/{2}\''
+    unzip_str_1 = 'ssh {0}@{1}'
+    unzip_str_2 = 'yes | unzip ~/{0}'
     uid = os.getlogin()
     zip_file_name = utils.extract_path_end(application_zip_path)
     logger.info('copying and unzipping ' + zip_file_name + ' to specified nodes')
@@ -103,20 +104,26 @@ def setup_application(application_name, replace_zip, node_ssh_list):
                                  uid,
                                  addr_only,
                                  zip_file_name)
-        unzip_cmd = unzip_str.format(uid,
-                                     addr_only,
-                                     zip_file_name)
+        unzip_cmd_1 = unzip_str_1.format(uid,
+                                         addr_only)
+        unzip_cmd_2 = unzip_str_2.format(zip_file_name)
         subprocess.Popen(scp_cmd.split()).wait()
-        subprocess.Popen(unzip_cmd.split(),
-                         shell=True).wait()
+        subprocess.Popen(unzip_cmd_1.split() + [unzip_cmd_2]).wait()
+
+        #testing = unzip_cmd_1.split() + [unzip_cmd_2]
+        #print(testing)
 
         #print(ssh_line)
         #print(addr_only)
         #print(uid)
         #print(zip_file_name)
 
-        print(scp_cmd)
-        print(unzip_cmd)
+        #print(scp_cmd)
+        #print(unzip_cmd)
+        #unzip_cmd_split = unzip_cmd.split()
+        #print(unzip_cmd_split)
+        #for cmp in unzip_cmd_split:
+        #    print(cmp)
 
     #print(application_info)
     #print(node_ssh_list_path)
