@@ -107,7 +107,8 @@ def setup_application(application_name, replace_zip, node_ssh_list):
                                      addr_only,
                                      zip_file_name)
         subprocess.Popen(scp_cmd.split()).wait()
-        subprocess.Popen(unzip_cmd.split()).wait()
+        subprocess.Popen(unzip_cmd.split(),
+                         shell=True).wait()
 
         #print(ssh_line)
         #print(addr_only)
