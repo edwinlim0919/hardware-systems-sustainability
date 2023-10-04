@@ -66,9 +66,15 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     # Zip grpc-hotel-ipu/datacenter-soc into grpc-hotel-ipu/zipped-applications
     application_dir_path = application_info['dir_path']
     application_zip_path = '../zipped-applications/' + application_name + '.zip'
+    application_folder_paths = application_info['zip_paths']
+    zip_cmd_arg1 = ''
+    for zip_path in application_folder_paths:
+        zip_cmd_arg1 += (' ' + zip_path)
     zip_str = 'zip -r {0} {1}'
+    #zip_cmd = zip_str.format(application_zip_path,
+    #                         '../datacenter-soc') # TODO: need to change this if ever using different versions on datacenter-soc for different projects
     zip_cmd = zip_str.format(application_zip_path,
-                             '../datacenter-soc') # TODO: need to change this if ever using different versions on datacenter-soc for different projects
+                             zip_cmd_arg1)
     logger.info('----------------')
     logger.info('Setting up ' + application_name_upper + '...')
     if os.path.isfile(application_zip_path) and not replace_zip:
@@ -78,23 +84,23 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         subprocess.Popen(zip_cmd.split()).wait()
 
     # For each node in node_ssh_list, copy application zip and unzip
-    scp_str = 'scp {0} {1}@{2}:~/{3}'
-    unzip_str_1 = 'ssh {0}@{1}'
-    unzip_str_2 = 'yes | unzip ~/{0}'
-    uid = os.getlogin()
-    zip_file_name = utils.extract_path_end(application_zip_path)
-    logger.info('copying and unzipping ' + zip_file_name + ' to specified nodes')
-    for ssh_line in node_ssh_lines:
-        addr_only = utils.extract_ssh_addr(ssh_line)
-        scp_cmd = scp_str.format(application_zip_path,
-                                 uid,
-                                 addr_only,
-                                 zip_file_name)
-        unzip_cmd_1 = unzip_str_1.format(uid,
-                                         addr_only)
-        unzip_cmd_2 = unzip_str_2.format(zip_file_name)
-        subprocess.Popen(scp_cmd.split()).wait()
-        subprocess.Popen(unzip_cmd_1.split() + [unzip_cmd_2]).wait()
+    #scp_str = 'scp {0} {1}@{2}:~/{3}'
+    #unzip_str_1 = 'ssh {0}@{1}'
+    #unzip_str_2 = 'yes | unzip ~/{0}'
+    #uid = os.getlogin()
+    #zip_file_name = utils.extract_path_end(application_zip_path)
+    #logger.info('copying and unzipping ' + zip_file_name + ' to specified nodes')
+    #for ssh_line in node_ssh_lines:
+    #    addr_only = utils.extract_ssh_addr(ssh_line)
+    #    scp_cmd = scp_str.format(application_zip_path,
+    #                             uid,
+    #                             addr_only,
+    #                             zip_file_name)
+    #    unzip_cmd_1 = unzip_str_1.format(uid,
+    #                                     addr_only)
+    #    unzip_cmd_2 = unzip_str_2.format(zip_file_name)
+    #    subprocess.Popen(scp_cmd.split()).wait()
+    #    subprocess.Popen(unzip_cmd_1.split() + [unzip_cmd_2]).wait()
 
 
 def get_args():
