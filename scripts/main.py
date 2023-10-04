@@ -110,26 +110,6 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         subprocess.Popen(scp_cmd.split()).wait()
         subprocess.Popen(unzip_cmd_1.split() + [unzip_cmd_2]).wait()
 
-        #testing = unzip_cmd_1.split() + [unzip_cmd_2]
-        #print(testing)
-
-        #print(ssh_line)
-        #print(addr_only)
-        #print(uid)
-        #print(zip_file_name)
-
-        #print(scp_cmd)
-        #print(unzip_cmd)
-        #unzip_cmd_split = unzip_cmd.split()
-        #print(unzip_cmd_split)
-        #for cmp in unzip_cmd_split:
-        #    print(cmp)
-
-    #print(application_info)
-    #print(node_ssh_list_path)
-    #print(node_ssh_lines)
-    #print(application_dir_path)
-    #print(zip_cmd)
 
 def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
