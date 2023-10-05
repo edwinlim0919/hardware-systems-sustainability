@@ -83,11 +83,13 @@ def setup_application(application_name, replace_zip, node_ssh_list):
 
     # For each node in node_ssh_list, copy application zip and unzip
     scp_str = 'scp {0} {1}@{2}:~/{3}'
+    scp_r_str = 'scp -r {0} {1}@{2}:~/{3}'
     ssh_str = 'ssh {0}@{1}'
     unzip_str = 'yes | unzip ~/{0}'
     cp_str = 'cp -R {0} {1}'
     uid = os.getlogin()
     zip_file_name = utils.extract_path_end(application_zip_path)
+
     logger.info('copying, unzipping, and organizing ' + zip_file_name + ' for specified nodes')
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
@@ -108,13 +110,36 @@ def setup_application(application_name, replace_zip, node_ssh_list):
             cp_cmds.append(cp_cmd)
         subprocess.Popen(scp_cmd.split()).wait()
         subprocess.Popen(ssh_cmd.split() + [unzip_cmd]).wait()
-        for cmd in cp_cmds:
-            subprocess.Popen(ssh_cmd.split() + [cmd]).wait()
+        for cp_cmd in cp_cmds:
+            subprocess.Popen(ssh_cmd.split() + [cp_cmd]).wait()
 
     # Copy scripts and install dependencies on all nodes
+    logger.info('copying setup scripts for specified nodes')
+    for ssh_line in node_ssh_lines:
+        addr_only = utils.extract_ssh_addr(ssh_line)
+        scp_setup_cmd = scp_str.format('../setup.sh',
+                                       uid,
+                                       addr_only,
+                                       'setup.sh')
+        scp_scripts_cmd = scp_r_str.format('../scripts',
+                                           uid,
+                                           addr_only,
+                                           'scripts')
+        subprocess.Popen(scp_setup_cmd.split()).wait()
+        subprocess.Popen(scp_scripts_cmd.split()).wait()
 
+    # Since ./setup.sh takes a while, run in parallel and wait
+    logger.info('running setup scripts in parallel for specified nodes')
+    procs_list = []
+    for ssh_line in node_ssh_lines:
+        ssh_cmd = ssh_str.format(uid,
+                                 addr_only)
+        setup_cmd = 'cd ~/ ; yes | ./setup.sh'
+        procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]).wait())
+    for proc in procs_list:
+        proc.wait()
 
-    logger.info('Set up ' + application_name ' application successfully.')
+    logger.info('Set up ' + application_name + ' application successfully.')
     logger.info('----------------')
 
 

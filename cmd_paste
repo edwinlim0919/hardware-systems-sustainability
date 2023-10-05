@@ -10,3 +10,5 @@ ssh edwinlim@ms0422.utah.cloudlab.us 'yes | unzip ~/testing_fix.zip'
 scp /dev/shm/grpc-hotel-ipu/setup.sh edwinlim@ms0403.utah.cloudlab.us:~/setup.sh
 scp -r /dev/shm/grpc-hotel-ipu/scripts edwinlim@ms0403.utah.cloudlab.us:~/scripts
 ssh edwinlim@ms0403.utah.cloudlab.us 'cd ~/ ; yes | ./setup.sh'
+
+ssh edwinlim@ms0403.utah.cloudlab.us 'cd ~/medium_hotel_db_replica_profile_mongo/DeathStarBench/hotelReservation ; sudo docker compose build'
