@@ -71,8 +71,6 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     for zip_path in application_folder_paths:
         zip_cmd_arg1 += (' ' + zip_path)
     zip_str = 'zip -r {0} {1}'
-    #zip_cmd = zip_str.format(application_zip_path,
-    #                         '../datacenter-soc') # TODO: need to change this if ever using different versions on datacenter-soc for different projects
     zip_cmd = zip_str.format(application_zip_path,
                              zip_cmd_arg1)
     logger.info('----------------')
@@ -82,8 +80,6 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     else:
         logger.info('zipping ' + application_zip_path)
         subprocess.Popen(zip_cmd.split()).wait()
-
-    print(zip_cmd)
 
     # For each node in node_ssh_list, copy application zip and unzip
     scp_str = 'scp {0} {1}@{2}:~/{3}'
@@ -114,6 +110,12 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         subprocess.Popen(ssh_cmd.split() + [unzip_cmd]).wait()
         for cmd in cp_cmds:
             subprocess.Popen(ssh_cmd.split() + [cmd]).wait()
+
+    # Copy scripts and install dependencies on all nodes
+
+
+    logger.info('Set up ' + application_name ' application successfully.')
+    logger.info('----------------')
 
 
 def get_args():

@@ -6,3 +6,7 @@ python3 main.py --leave-docker-swarm --is-manager
 zip -r /dev/shm/grpc-hotel-ipu/zipped-applications/testing_fix.zip /dev/shm/grpc-hotel-ipu/datacenter-soc/workload_generator/wrk2 /dev/shm/grpc-hotel-ipu/datacenter-soc/modified_hotel_reservation_applications/medium_hotel_db_replica_profile_mongo
 scp /dev/shm/grpc-hotel-ipu/zipped-applications/testing_fix.zip edwinlim@ms0422.utah.cloudlab.us:~/testing_fix.zip
 ssh edwinlim@ms0422.utah.cloudlab.us 'yes | unzip ~/testing_fix.zip'
+
+scp /dev/shm/grpc-hotel-ipu/setup.sh edwinlim@ms0403.utah.cloudlab.us:~/setup.sh
+scp -r /dev/shm/grpc-hotel-ipu/scripts edwinlim@ms0403.utah.cloudlab.us:~/scripts
+ssh edwinlim@ms0403.utah.cloudlab.us 'cd ~/ ; yes | ./setup.sh'
