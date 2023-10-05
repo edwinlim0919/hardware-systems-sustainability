@@ -1,5 +1,7 @@
 python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
 python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list m400_16_testing.txt
+python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list m400_16_testing.txt --replace-zip
+python3 main.py --leave-docker-swarm --is-manager
 
 zip -r /dev/shm/grpc-hotel-ipu/zipped-applications/testing_fix.zip /dev/shm/grpc-hotel-ipu/datacenter-soc/workload_generator/wrk2 /dev/shm/grpc-hotel-ipu/datacenter-soc/modified_hotel_reservation_applications/medium_hotel_db_replica_profile_mongo
 scp /dev/shm/grpc-hotel-ipu/zipped-applications/testing_fix.zip edwinlim@ms0422.utah.cloudlab.us:~/testing_fix.zip
