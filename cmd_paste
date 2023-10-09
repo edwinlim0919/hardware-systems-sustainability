@@ -12,3 +12,6 @@ scp -r /dev/shm/grpc-hotel-ipu/scripts edwinlim@ms0403.utah.cloudlab.us:~/script
 ssh edwinlim@ms0403.utah.cloudlab.us 'cd ~/ ; yes | ./setup.sh'
 
 ssh edwinlim@ms0403.utah.cloudlab.us 'cd ~/medium_hotel_db_replica_profile_mongo/DeathStarBench/hotelReservation ; sudo docker compose build'
+ssh edwinlim@ms0403.utah.cloudlab.us 'bash ~/scripts/rebuilt_push_images.sh'
+
+ssh edwinlim@ms0403.utah.cloudlab.us ''

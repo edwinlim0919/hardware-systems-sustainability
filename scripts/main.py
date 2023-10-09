@@ -81,12 +81,15 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         logger.info('zipping ' + application_zip_path)
         subprocess.Popen(zip_cmd.split()).wait()
 
+    # TODO: Clean up random home directory stuff
     # For each node in node_ssh_list, copy application zip and unzip
     scp_str = 'scp {0} {1}@{2}:~/{3}'
     scp_r_str = 'scp -r {0} {1}@{2}:~/{3}'
     ssh_str = 'ssh {0}@{1}'
     unzip_str = 'yes | unzip ~/{0}'
     cp_str = 'cp -R {0} {1}'
+    cd_str = 'cd ~/{0}'
+    #docker_build_str = 'cd ~/{0} ; sudo docker compose build'
     uid = os.getlogin()
     zip_file_name = utils.extract_path_end(application_zip_path)
 
@@ -132,12 +135,20 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     logger.info('running setup scripts in parallel for specified nodes')
     procs_list = []
     for ssh_line in node_ssh_lines:
+        addr_only = utils.extract_ssh_addr(ssh_line)
         ssh_cmd = ssh_str.format(uid,
                                  addr_only)
         setup_cmd = 'cd ~/ ; yes | ./setup.sh'
-        procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]).wait())
+        procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]))
     for proc in procs_list:
         proc.wait()
+
+    # Build docker images for all of the microservices
+    for ssh_line in node_ssh_lines:
+        addr_only = utils.extract_ssh_addr(ssh_line)
+        ssh_cmd = ssh_str.format(uid,
+                                 addr_only)
+        cd_cmd = cd_str.format('datacenter-soc/' + )
 
     logger.info('Set up ' + application_name + ' application successfully.')
     logger.info('----------------')
