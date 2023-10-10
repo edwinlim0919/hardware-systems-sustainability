@@ -1,5 +1,6 @@
 python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
 python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list m400_16_testing.txt
+python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list c6320_6.txt
 python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list m400_16_testing.txt --replace-zip
 python3 main.py --leave-docker-swarm --is-manager
 

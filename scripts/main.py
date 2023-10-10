@@ -91,6 +91,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     uid = os.getlogin()
     zip_file_name = utils.extract_path_end(application_zip_path)
 
+    procs_list = []
     logger.info('copying, unzipping, and organizing ' + zip_file_name + ' for specified nodes')
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
@@ -98,9 +99,25 @@ def setup_application(application_name, replace_zip, node_ssh_list):
                                  uid,
                                  addr_only,
                                  '~/' + zip_file_name)
+        procs_list.append(subprocess.Popen(scp_cmd.split()))
+    for proc in procs_list:
+        proc.wait()
+
+    procs_list.clear()
+    for ssh_line in node_ssh_lines:
+        addr_only = utils.extract_ssh_addr(ssh_line)
         ssh_cmd = ssh_str.format(uid,
                                  addr_only)
         unzip_cmd = unzip_str.format('~/' + zip_file_name)
+        procs_list.append(subprocess.Popen(ssh_cmd.split() + [unzip_cmd]))
+    for proc in procs_list:
+        proc.wait()
+
+    procs_list.clear()
+    for ssh_line in node_ssh_lines:
+        addr_only = utils.extract_ssh_addr(ssh_line)
+        ssh_cmd = ssh_str.format(uid,
+                                 addr_only)
         cp_cmds = []
         for zip_path in application_folder_paths.values():
             zip_path_end = utils.extract_path_end(zip_path)
@@ -109,29 +126,38 @@ def setup_application(application_name, replace_zip, node_ssh_list):
             cp_cmd = cp_str.format(zip_path_src,
                                    zip_path_dest)
             cp_cmds.append(cp_cmd)
-        subprocess.Popen(scp_cmd.split()).wait()
-        subprocess.Popen(ssh_cmd.split() + [unzip_cmd]).wait()
         for cp_cmd in cp_cmds:
-            subprocess.Popen(ssh_cmd.split() + [cp_cmd]).wait()
+            procs_list.append(subprocess.Popen(ssh_cmd.split() + [cp_cmd]))
+    for proc in procs_list:
+        proc.wait()
 
     # Copy scripts and install dependencies on all nodes
     logger.info('copying setup scripts for specified nodes')
+    procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
         scp_setup_cmd = scp_str.format('../setup.sh',
                                        uid,
                                        addr_only,
                                        '~/setup.sh')
+        procs_list.append(subprocess.Popen(scp_setup_cmd.split()))
+    for proc in procs_list:
+        proc.wait()
+
+    procs_list.clear()
+    for ssh_line in node_ssh_lines:
+        addr_only = utils.extract_ssh_addr(ssh_line)
         scp_scripts_cmd = scp_r_str.format('../scripts',
                                            uid,
                                            addr_only,
                                            '~/scripts')
-        subprocess.Popen(scp_setup_cmd.split()).wait()
-        subprocess.Popen(scp_scripts_cmd.split()).wait()
+        procs_list.append(subprocess.Popen(scp_scripts_cmd.split()))
+    for proc in procs_list:
+        proc.wait()
 
     # Since ./setup.sh takes a while, run in parallel and wait
     logger.info('running setup scripts in parallel for specified nodes')
-    procs_list = []
+    procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
         ssh_cmd = ssh_str.format(uid,
@@ -150,8 +176,8 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         cd_cmd = cd_str.format(application_info['node_dir_path'])
         docker_build_cmd = cd_cmd + ' ; sudo docker compose build'
         #print(ssh_cmd + ' ' + docker_build_cmd)
-        procs_list.append(subprocess.Popen(ssh_cmd).split() +
-                                           [docker_build_cmd])
+        procs_list.append(subprocess.Popen(ssh_cmd.split() +
+                                           [docker_build_cmd]))
     for proc in procs_list:
         proc.wait()
 
