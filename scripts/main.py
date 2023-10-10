@@ -177,12 +177,15 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         docker_build_cmd = cd_cmd + ' ; sudo docker compose build'
         #print(ssh_cmd + ' ' + docker_build_cmd)
         procs_list.append(subprocess.Popen(ssh_cmd.split() +
-                                           [docker_build_cmd]))
+                          [docker_build_cmd]))
     for proc in procs_list:
         proc.wait()
 
     logger.info('Set up ' + application_name + ' application successfully.')
     logger.info('----------------')
+
+
+#def setup_application(application_name, replace_zip, node_ssh_list):
 
 
 def get_args():
@@ -233,6 +236,12 @@ def get_args():
                         dest='node_ssh_list',
                         type=str,
                         help='provide name of file within grpc-hotel-ipu/node-ssh-lists/ containing CloudLab ssh commands')
+
+    # Starting DeathStarBench applications on CloudLab nodes after setup and swarm initialization
+    parser.add_argument('--start-application',
+                        dest='start_application',
+                        action='store_true',
+                        help='specify arg to start specified application')
 
     return parser.parse_args()
 
