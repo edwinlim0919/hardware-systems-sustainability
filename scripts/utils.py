@@ -8,15 +8,12 @@ import subprocess
 def validate_ip(ip_address):
     return re.match(r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}', ip_address)
 
-
 def extract_ssh_addr(ssh_line):
     full_login = ssh_line.split()[-1]
     return full_login.split('@')[-1]
 
-
 def extract_path_end(path):
     return path.split('/')[-1]
-
 
 def parse_ifconfig(logger):
     ifconfig_proc = subprocess.Popen(['ifconfig', '-a'],

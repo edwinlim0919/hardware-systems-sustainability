@@ -64,11 +64,11 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     node_ssh_lines = [line.strip() for line in open(node_ssh_list_path).readlines()]
 
     # Zip grpc-hotel-ipu/datacenter-soc into grpc-hotel-ipu/zipped-applications
-    application_dir_path = application_info['dir_path']
+    application_dir_path = application_info['manager_dir_path']
     application_zip_path = '../zipped-applications/' + application_name + '.zip'
     application_folder_paths = application_info['zip_paths']
     zip_cmd_arg1 = ''
-    for zip_path in application_folder_paths:
+    for zip_path in application_folder_paths.values():
         zip_cmd_arg1 += (' ' + zip_path)
     zip_str = 'zip -r {0} {1}'
     zip_cmd = zip_str.format(application_zip_path,
@@ -81,15 +81,13 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         logger.info('zipping ' + application_zip_path)
         subprocess.Popen(zip_cmd.split()).wait()
 
-    # TODO: Clean up random home directory stuff
     # For each node in node_ssh_list, copy application zip and unzip
-    scp_str = 'scp {0} {1}@{2}:~/{3}'
-    scp_r_str = 'scp -r {0} {1}@{2}:~/{3}'
+    scp_str = 'scp {0} {1}@{2}:{3}'
+    scp_r_str = 'scp -r {0} {1}@{2}:{3}'
     ssh_str = 'ssh {0}@{1}'
-    unzip_str = 'yes | unzip ~/{0}'
+    unzip_str = 'yes | unzip {0}'
     cp_str = 'cp -R {0} {1}'
-    cd_str = 'cd ~/{0}'
-    #docker_build_str = 'cd ~/{0} ; sudo docker compose build'
+    cd_str = 'cd {0}'
     uid = os.getlogin()
     zip_file_name = utils.extract_path_end(application_zip_path)
 
@@ -99,12 +97,12 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         scp_cmd = scp_str.format(application_zip_path,
                                  uid,
                                  addr_only,
-                                 zip_file_name)
+                                 '~/' + zip_file_name)
         ssh_cmd = ssh_str.format(uid,
                                  addr_only)
-        unzip_cmd = unzip_str.format(zip_file_name)
+        unzip_cmd = unzip_str.format('~/' + zip_file_name)
         cp_cmds = []
-        for zip_path in application_folder_paths:
+        for zip_path in application_folder_paths.values():
             zip_path_end = utils.extract_path_end(zip_path)
             zip_path_dest = '~/' + zip_path_end
             zip_path_src = '~/datacenter-soc/' + zip_path
@@ -123,11 +121,11 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         scp_setup_cmd = scp_str.format('../setup.sh',
                                        uid,
                                        addr_only,
-                                       'setup.sh')
+                                       '~/setup.sh')
         scp_scripts_cmd = scp_r_str.format('../scripts',
                                            uid,
                                            addr_only,
-                                           'scripts')
+                                           '~/scripts')
         subprocess.Popen(scp_setup_cmd.split()).wait()
         subprocess.Popen(scp_scripts_cmd.split()).wait()
 
@@ -144,11 +142,18 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         proc.wait()
 
     # Build docker images for all of the microservices
+    procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
         ssh_cmd = ssh_str.format(uid,
                                  addr_only)
-        cd_cmd = cd_str.format('datacenter-soc/' + )
+        cd_cmd = cd_str.format(application_info['node_dir_path'])
+        docker_build_cmd = cd_cmd + ' ; sudo docker compose build'
+        #print(ssh_cmd + ' ' + docker_build_cmd)
+        procs_list.append(subprocess.Popen(ssh_cmd).split() +
+                                           [docker_build_cmd])
+    for proc in procs_list:
+        proc.wait()
 
     logger.info('Set up ' + application_name + ' application successfully.')
     logger.info('----------------')
