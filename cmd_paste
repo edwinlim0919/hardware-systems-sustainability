@@ -16,3 +16,5 @@ ssh edwinlim@ms0403.utah.cloudlab.us 'cd ~/medium_hotel_db_replica_profile_mongo
 ssh edwinlim@ms0403.utah.cloudlab.us 'bash ~/scripts/rebuilt_push_images.sh'
 
 ssh edwinlim@ms0403.utah.cloudlab.us ''
+
+docker swarm join --token SWMTKN-1-58dxvg46t1vbrhsf549fzl8e4ffjq9qparccl6wk40guxox9yg-833uoy0hqqld7qi2by0tu354l 10.10.1.1:2377
