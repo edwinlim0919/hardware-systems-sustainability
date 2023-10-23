@@ -13,44 +13,6 @@ import metadata
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('grpc-hotel-ipu')
 
-
-def setup_docker_swarm(args):
-    advertise_addr = utils.parse_ifconfig(logger)
-    docker_swarm_init_str = 'sudo docker swarm init ' + \
-                            '--advertise-addr {0}'
-    docker_swarm_init_cmd = docker_swarm_init_str.format(advertise_addr)
-    docker_service_create_str = 'sudo docker service create ' + \
-                                '--name registry ' + \
-                                '--publish published={0},target={1} registry:{2}'
-    docker_service_create_cmd = docker_service_create_str.format(args.published,
-                                                                 args.target,
-                                                                 args.registry)
-    logger.info('----------------')
-    logger.info('Setting up docker swarm...')
-    logger.info('advertise-addr: ' + advertise_addr)
-    logger.info('Initializing docker swarm...')
-    subprocess.Popen(docker_swarm_init_cmd.split()).wait()
-    logger.info('Starting local registry on this node...')
-    logger.info('published: ' + str(args.published))
-    logger.info('target: ' + str(args.target))
-    logger.info('registry: ' + str(args.registry))
-    subprocess.Popen(docker_service_create_cmd.split()).wait()
-    logger.info('Set up docker swarm successfully.')
-    logger.info('----------------')
-
-
-def leave_docker_swarm(is_manager):
-    docker_swarm_leave_cmd = 'sudo docker swarm leave --force'
-    logger.info('----------------')
-    logger.info('Leaving docker swarm...')
-    if is_manager:
-        logger.info('I am a manager! Waiting for all non-manager nodes to leave...')
-        # TODO: Make sure all non-manager nodes have left swarm first
-    subprocess.Popen(docker_swarm_leave_cmd.split()).wait()
-    logger.info('Left swarm successfully.')
-    logger.info('----------------')
-
-
 def setup_application(application_name, replace_zip, node_ssh_list):
     application_name_upper = application_name.upper()
     if application_name_upper not in metadata.application_info:
@@ -61,7 +23,8 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     node_ssh_list_path = curr_dir + '/../node-ssh-lists/' + node_ssh_list
     if not os.path.isfile(node_ssh_list_path):
         ValueError('specified ssh command file does not exist grpc-hotel-ipu/ssh-node-lists')
-    node_ssh_lines = [line.strip() for line in open(node_ssh_list_path).readlines()]
+    node_ssh_lines_unfiltered = [line.strip() for line in open(node_ssh_list_path).readlines()]
+    node_ssh_lines = [line.split()[:-1] for line in node_ssh_lines_unfiltered]
 
     # Zip grpc-hotel-ipu/datacenter-soc into grpc-hotel-ipu/zipped-applications
     application_dir_path = application_info['manager_dir_path']
@@ -185,6 +148,51 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     logger.info('----------------')
 
 
+def setup_docker_swarm(published, target, registry):
+    advertise_addr = utils.parse_ifconfig()
+    docker_swarm_init_str = 'sudo docker swarm init ' + \
+                            '--advertise-addr {0}'
+    docker_swarm_init_cmd = docker_swarm_init_str.format(advertise_addr)
+    docker_service_create_str = 'sudo docker service create ' + \
+                                '--name registry ' + \
+                                '--publish published={0},target={1} registry:{2}'
+    docker_service_create_cmd = docker_service_create_str.format(published,
+                                                                 target,
+                                                                 registry)
+    logger.info('----------------')
+    logger.info('Setting up docker swarm...')
+    logger.info('advertise-addr: ' + advertise_addr)
+    logger.info('Initializing docker swarm...')
+    subprocess.Popen(docker_swarm_init_cmd.split()).wait()
+    logger.info('Starting local registry on this node...')
+    logger.info('published: ' + str(published))
+    logger.info('target: ' + str(target))
+    logger.info('registry: ' + str(registry))
+    subprocess.Popen(docker_service_create_cmd.split()).wait()
+    logger.info('Set up docker swarm successfully.')
+    logger.info('----------------')
+
+
+def join_docker_swarm(node_ssh_list):
+    logger.info('----------------')
+    logger.info('Joining docker swarm from other nodes...')
+    swarm_join_cmd = utils.parse_swarm_join_token_worker()
+    logger.info('Swarm join command: ' + swarm_join_cmd)
+    logger.info('----------------')
+
+
+def leave_docker_swarm(is_manager):
+    docker_swarm_leave_cmd = 'sudo docker swarm leave --force'
+    logger.info('----------------')
+    logger.info('Leaving docker swarm...')
+    if is_manager:
+        logger.info('I am a manager! Waiting for all non-manager nodes to leave...')
+        # TODO: Make sure all non-manager nodes have left swarm first
+    subprocess.Popen(docker_swarm_leave_cmd.split()).wait()
+    logger.info('Left swarm successfully.')
+    logger.info('----------------')
+
+
 #def setup_application(application_name, replace_zip, node_ssh_list):
 
 
@@ -208,7 +216,6 @@ def get_args():
                         dest='registry',
                         type=int,
                         help='specify the registry value for creating docker registry service')
-
     # Leaving docker swarm
     parser.add_argument('--leave-docker-swarm',
                         dest='leave_docker_swarm',
@@ -218,7 +225,6 @@ def get_args():
                         dest='is_manager',
                         action='store_true',
                         help='specify arg if current docker node is a manager')
-
     # Setting up DeathStarBench applications on CloudLab nodes
     parser.add_argument('--setup-application',
                         dest='setup_application',
@@ -236,7 +242,11 @@ def get_args():
                         dest='node_ssh_list',
                         type=str,
                         help='provide name of file within grpc-hotel-ipu/node-ssh-lists/ containing CloudLab ssh commands')
-
+    # Joining docker swarm from other nodes
+    parser.add_argument('--join-docker-swarm',
+                        dest='join_docker_swarm',
+                        action='store_true',
+                        help='specify arg to join docker swarm from other nodes')
     # Starting DeathStarBench applications on CloudLab nodes after setup and swarm initialization
     parser.add_argument('--start-application',
                         dest='start_application',
@@ -249,6 +259,12 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
 
+    if args.setup_application:
+        if args.application_name is None:
+            raise ValueError('application name must be provided for application setup')
+        if args.node_ssh_list is None:
+            raise ValueError('must provide file containing CloudLab ssh node info for application setup')
+        setup_application(args.application_name, args.replace_zip, args.node_ssh_list)
     if args.setup_docker_swarm:
         if args.published is None:
             raise ValueError('published value should be specified for creating docker registry service')
@@ -256,13 +272,10 @@ if __name__ == '__main__':
             raise ValueError('target value should be specified for creating docker registry service')
         if args.registry is None:
             raise ValueError('registry value should be specified for creating docker registry service')
-        setup_docker_swarm(args)
-    if args.setup_application:
-        if args.application_name is None:
-            raise ValueError('application name must be provided for application setup')
+        setup_docker_swarm(args.published, args.target, args.registry)
+    if args.join_docker_swarm:
         if args.node_ssh_list is None:
-            raise ValueError('must provide file containing CloudLab ssh commands for application setup')
-        setup_application(args.application_name, args.replace_zip, args.node_ssh_list)
-
+            raise ValueError('must provide file containing CloudLab ssh node info for application setup')
+        join_docker_swarm(args.node_ssh_list)
     if args.leave_docker_swarm:
         leave_docker_swarm(args.is_manager)

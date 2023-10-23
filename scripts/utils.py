@@ -15,7 +15,8 @@ def extract_ssh_addr(ssh_line):
 def extract_path_end(path):
     return path.split('/')[-1]
 
-def parse_ifconfig(logger):
+# parses output of 'ifconfig -a'
+def parse_ifconfig():
     ifconfig_proc = subprocess.Popen(['ifconfig', '-a'],
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
@@ -34,5 +35,23 @@ def parse_ifconfig(logger):
             prev_word = word
 
     if len(valid_ips) != 1:
-        raise ValueError('ifconfig parsing error: more than 1 valid docker manager address found')
+        raise ValueError('ifconfig parsing error: none or multiple valid docker manager addresses found')
     return valid_ips[0]
+
+# parses output of 'sudo docker swarm join-token worker'
+def parse_swarm_join_token_worker():
+    join_token_worker_proc = subprocess.Popen(['sudo',
+                                               'docker',
+                                               'swarm',
+                                               'join-token',
+                                               'worker'],
+                                              stdout=subprocess.PIPE,
+                                              stderr=subprocess.STDOUT)
+    join_token_worker_text = join_token_worker_proc.communicate()[0].decode('utf-8')
+    join_cmd = ''
+    for line in join_token_worker_text.splitlines():
+        if 'docker swarm join' in line:
+            join_cmd = line.strip()
+    if join_cmd == '':
+        raise ValueError('no valid docker join command found')
+    return join_cmd
