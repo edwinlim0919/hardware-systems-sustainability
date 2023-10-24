@@ -19,11 +19,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         ValueError('specified application does not exist in metadata.appication_info')
     application_info = metadata.application_info[application_name_upper]
 
-    curr_dir = os.getcwd()
-    node_ssh_list_path = curr_dir + '/../node-ssh-lists/' + node_ssh_list
-    if not os.path.isfile(node_ssh_list_path):
-        ValueError('specified ssh command file does not exist grpc-hotel-ipu/ssh-node-lists')
-    node_ssh_lines_unfiltered = [line.strip() for line in open(node_ssh_list_path).readlines()]
+    node_ssh_lines_unfiltered = [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]
     node_ssh_lines = []
     for word_list in [line.split()[:-1] for line in node_ssh_lines_unfiltered]:
         full_line = ''
@@ -50,20 +46,13 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         subprocess.Popen(zip_cmd.split()).wait()
 
     # For each node in node_ssh_list, copy application zip and unzip
-    scp_str = 'scp {0} {1}@{2}:{3}'
-    scp_r_str = 'scp -r {0} {1}@{2}:{3}'
-    ssh_str = 'ssh {0}@{1}'
-    unzip_str = 'yes | unzip {0}'
-    cp_str = 'cp -R {0} {1}'
-    cd_str = 'cd {0}'
     uid = os.getlogin()
     zip_file_name = utils.extract_path_end(application_zip_path)
-
     procs_list = []
     logger.info('copying, unzipping, and organizing ' + zip_file_name + ' for specified nodes')
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        scp_cmd = scp_str.format(application_zip_path,
+        scp_cmd = utils.scp_str.format(application_zip_path,
                                  uid,
                                  addr_only,
                                  '~/' + zip_file_name)
@@ -74,8 +63,8 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = ssh_str.format(uid, addr_only)
-        unzip_cmd = unzip_str.format('~/' + zip_file_name)
+        ssh_cmd = utils.ssh_str.format(uid, addr_only)
+        unzip_cmd = utils.unzip_str.format('~/' + zip_file_name)
         procs_list.append(subprocess.Popen(ssh_cmd.split() + [unzip_cmd]))
     for proc in procs_list:
         proc.wait()
@@ -83,13 +72,13 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = ssh_str.format(uid, addr_only)
+        ssh_cmd = utils.ssh_str.format(uid, addr_only)
         cp_cmds = []
         for zip_path in application_folder_paths.values():
             zip_path_end = utils.extract_path_end(zip_path)
             zip_path_dest = '~/' + zip_path_end
             zip_path_src = '~/datacenter-soc/' + zip_path
-            cp_cmd = cp_str.format(zip_path_src, zip_path_dest)
+            cp_cmd = utils.cp_str.format(zip_path_src, zip_path_dest)
             cp_cmds.append(cp_cmd)
         for cp_cmd in cp_cmds:
             procs_list.append(subprocess.Popen(ssh_cmd.split() + [cp_cmd]))
@@ -101,7 +90,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        scp_setup_cmd = scp_str.format('../setup.sh',
+        scp_setup_cmd = utils.scp_str.format('../setup.sh',
                                        uid,
                                        addr_only,
                                        '~/setup.sh')
@@ -112,7 +101,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        scp_scripts_cmd = scp_r_str.format('../scripts',
+        scp_scripts_cmd = utils.scp_r_str.format('../scripts',
                                            uid,
                                            addr_only,
                                            '~/scripts')
@@ -125,7 +114,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = ssh_str.format(uid, addr_only)
+        ssh_cmd = utils.ssh_str.format(uid, addr_only)
         setup_cmd = 'cd ~/ ; yes | ./setup.sh'
         procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]))
     for proc in procs_list:
@@ -135,8 +124,8 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = ssh_str.format(uid, addr_only)
-        cd_cmd = cd_str.format(application_info['node_dir_path'])
+        ssh_cmd = utils.ssh_str.format(uid, addr_only)
+        cd_cmd = utils.cd_str.format(application_info['node_dir_path'])
         docker_build_cmd = cd_cmd + ' ; sudo docker compose build'
         #print(ssh_cmd + ' ' + docker_build_cmd)
         procs_list.append(subprocess.Popen(ssh_cmd.split() +
@@ -179,12 +168,8 @@ def join_docker_swarm(node_ssh_list, manager_addr):
     swarm_join_cmd = utils.parse_swarm_join_token_worker()
     logger.info('Swarm join command: ' + swarm_join_cmd)
 
-    curr_dir = os.getcwd()
-    node_ssh_list_path = curr_dir + '/../node-ssh-lists/' + node_ssh_list
-    if not os.path.isfile(node_ssh_list_path):
-        ValueError('specified ssh command file does not exist grpc-hotel-ipu/ssh-node-lists')
     node_ssh_lines_unfiltered = []
-    for ssh_line in [line.strip() for line in open(node_ssh_list_path).readlines()]:
+    for ssh_line in [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]:
         if manager_addr not in ssh_line:
             node_ssh_lines_unfiltered.append(ssh_line)
     node_ssh_lines = []
@@ -195,13 +180,11 @@ def join_docker_swarm(node_ssh_list, manager_addr):
         node_ssh_lines.append(full_line.strip())
     node_labels = [line.split()[-1] for line in node_ssh_lines_unfiltered]
 
-    ssh_str = 'ssh {0}@{1}'
     uid = os.getlogin()
-
     procs_list = []
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = ssh_str.format(uid, addr_only)
+        ssh_cmd = utils.ssh_str.format(uid, addr_only)
         procs_list.append(subprocess.Popen(ssh_cmd.split() + [swarm_join_cmd]))
     for proc in procs_list:
         proc.wait()
@@ -216,15 +199,43 @@ def join_docker_swarm(node_ssh_list, manager_addr):
     logger.info('----------------')
 
 
-def leave_docker_swarm(is_manager):
-    docker_swarm_leave_cmd = 'sudo docker swarm leave --force'
+def leave_docker_swarm(node_ssh_list, manager_addr):
     logger.info('----------------')
-    logger.info('Leaving docker swarm...')
-    if is_manager:
-        logger.info('I am a manager! Waiting for all non-manager nodes to leave...')
-        # TODO: Make sure all non-manager nodes have left swarm first
-    subprocess.Popen(docker_swarm_leave_cmd.split()).wait()
-    logger.info('Left swarm successfully.')
+    logger.info('Leaving docker swarm from other nodes...')
+    swarm_leave_cmd = 'sudo docker swarm leave --force'
+    logger.info('Swarm leave command: ' + swarm_leave_cmd)
+
+    node_ssh_lines_unfiltered = []
+    node_ssh_lines_manager = ''
+    for ssh_line in [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]:
+        if manager_addr not in ssh_line:
+            node_ssh_lines_unfiltered.append(ssh_line)
+        else:
+            node_ssh_lines_manager = ssh_line
+    node_ssh_lines = []
+    for word_list in [line.split()[:-1] for line in node_ssh_lines_unfiltered]:
+        full_line = ''
+        for word in word_list:
+            full_line += (word + ' ')
+        node_ssh_lines.append(full_line.strip())
+    full_line = ''
+    for word in node_ssh_lines_manager.split()[:-1]:
+        full_line += (word + ' ')
+    node_ssh_lines_manager = full_line.strip()
+
+    uid = os.getlogin()
+    procs_list = []
+    for ssh_line in node_ssh_lines:
+        addr_only = utils.extract_ssh_addr(ssh_line)
+        ssh_cmd = utils.ssh_str.format(uid, addr_only)
+        procs_list.append(subprocess.Popen(ssh_cmd.split() + [swarm_leave_cmd]))
+    for proc in procs_list:
+        proc.wait()
+    logger.info('All worker nodes left!')
+
+    subprocess.Popen(node_ssh_lines_manager.split() + [swarm_leave_cmd]).wait()
+    logger.info('Manager has left swarm!')
+    logger.info('All nodes have left Docker Swarm successfully')
     logger.info('----------------')
 
 
@@ -251,15 +262,6 @@ def get_args():
                         dest='registry',
                         type=int,
                         help='specify the registry value for creating docker registry service')
-    # Leaving docker swarm
-    parser.add_argument('--leave-docker-swarm',
-                        dest='leave_docker_swarm',
-                        action='store_true',
-                        help='specify arg to leave docker swarm')
-    parser.add_argument('--is-manager',
-                        dest='is_manager',
-                        action='store_true',
-                        help='specify arg if current docker node is a manager')
     # Setting up DeathStarBench applications on CloudLab nodes
     parser.add_argument('--setup-application',
                         dest='setup_application',
@@ -291,6 +293,11 @@ def get_args():
                         dest='start_application',
                         action='store_true',
                         help='specify arg to start specified application')
+    # Leaving docker swarm
+    parser.add_argument('--leave-docker-swarm',
+                        dest='leave_docker_swarm',
+                        action='store_true',
+                        help='specify arg to leave docker swarm')
 
     return parser.parse_args()
 
@@ -304,6 +311,7 @@ if __name__ == '__main__':
         if args.node_ssh_list is None:
             raise ValueError('must provide file containing CloudLab ssh node info for application setup')
         setup_application(args.application_name, args.replace_zip, args.node_ssh_list)
+
     if args.setup_docker_swarm:
         if args.published is None:
             raise ValueError('published value should be specified for creating docker registry service')
@@ -312,11 +320,17 @@ if __name__ == '__main__':
         if args.registry is None:
             raise ValueError('registry value should be specified for creating docker registry service')
         setup_docker_swarm(args.published, args.target, args.registry)
+
     if args.join_docker_swarm:
         if args.node_ssh_list is None:
-            raise ValueError('must provide file containing CloudLab ssh node info for application setup')
+            raise ValueError('must provide file containing CloudLab ssh node info for joining nodes')
         if args.manager_addr is None:
             raise ValueError('must provide ssh address of the swarm manager node')
         join_docker_swarm(args.node_ssh_list, args.manager_addr)
+
     if args.leave_docker_swarm:
-        leave_docker_swarm(args.is_manager)
+        if args.node_ssh_list is None:
+            raise ValueError('must provide file containing CloudLab ssh node info for leaving nodes')
+        if args.manager_addr is None:
+            raise ValueError('must provide ssh address of the swarm manager node')
+        leave_docker_swarm(args.node_ssh_list, args.manager_addr)

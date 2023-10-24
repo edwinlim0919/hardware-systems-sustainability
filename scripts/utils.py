@@ -2,18 +2,38 @@
 
 import re
 import subprocess
+import os
+
+
+scp_str = 'scp {0} {1}@{2}:{3}'
+scp_r_str = 'scp -r {0} {1}@{2}:{3}'
+ssh_str = 'ssh {0}@{1}'
+unzip_str = 'yes | unzip {0}'
+cp_str = 'cp -R {0} {1}'
+cd_str = 'cd {0}'
 
 
 # Validates that ip_address string is in a valid format
 def validate_ip(ip_address):
     return re.match(r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}', ip_address)
 
+
 def extract_ssh_addr(ssh_line):
     full_login = ssh_line.split()[-1]
     return full_login.split('@')[-1]
 
+
 def extract_path_end(path):
     return path.split('/')[-1]
+
+
+def get_node_ssh_list_file(node_ssh_list):
+    curr_dir = os.getcwd()
+    node_ssh_list_path = curr_dir + '/../node-ssh-lists/' + node_ssh_list
+    if not os.path.isfile(node_ssh_list_path):
+        ValueError('specified ssh info file does not exist in grpc-hotel-ipu/ssh-node-lists')
+    return open(node_ssh_list_path)
+
 
 # parses output of 'ifconfig -a'
 def parse_ifconfig():
@@ -37,6 +57,7 @@ def parse_ifconfig():
     if len(valid_ips) != 1:
         raise ValueError('ifconfig parsing error: none or multiple valid docker manager addresses found')
     return valid_ips[0]
+
 
 # parses output of 'sudo docker swarm join-token worker'
 def parse_swarm_join_token_worker():
