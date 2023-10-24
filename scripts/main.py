@@ -24,7 +24,12 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     if not os.path.isfile(node_ssh_list_path):
         ValueError('specified ssh command file does not exist grpc-hotel-ipu/ssh-node-lists')
     node_ssh_lines_unfiltered = [line.strip() for line in open(node_ssh_list_path).readlines()]
-    node_ssh_lines = [line.split()[:-1] for line in node_ssh_lines_unfiltered]
+    node_ssh_lines = []
+    for word_list in [line.split()[:-1] for line in node_ssh_lines_unfiltered]:
+        full_line = ''
+        for word in word_list:
+            full_line += (word + ' ')
+        node_ssh_lines.append(full_line.strip())
 
     # Zip grpc-hotel-ipu/datacenter-soc into grpc-hotel-ipu/zipped-applications
     application_dir_path = application_info['manager_dir_path']
@@ -69,8 +74,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = ssh_str.format(uid,
-                                 addr_only)
+        ssh_cmd = ssh_str.format(uid, addr_only)
         unzip_cmd = unzip_str.format('~/' + zip_file_name)
         procs_list.append(subprocess.Popen(ssh_cmd.split() + [unzip_cmd]))
     for proc in procs_list:
@@ -79,15 +83,13 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = ssh_str.format(uid,
-                                 addr_only)
+        ssh_cmd = ssh_str.format(uid, addr_only)
         cp_cmds = []
         for zip_path in application_folder_paths.values():
             zip_path_end = utils.extract_path_end(zip_path)
             zip_path_dest = '~/' + zip_path_end
             zip_path_src = '~/datacenter-soc/' + zip_path
-            cp_cmd = cp_str.format(zip_path_src,
-                                   zip_path_dest)
+            cp_cmd = cp_str.format(zip_path_src, zip_path_dest)
             cp_cmds.append(cp_cmd)
         for cp_cmd in cp_cmds:
             procs_list.append(subprocess.Popen(ssh_cmd.split() + [cp_cmd]))
@@ -123,8 +125,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = ssh_str.format(uid,
-                                 addr_only)
+        ssh_cmd = ssh_str.format(uid, addr_only)
         setup_cmd = 'cd ~/ ; yes | ./setup.sh'
         procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]))
     for proc in procs_list:
@@ -134,8 +135,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = ssh_str.format(uid,
-                                 addr_only)
+        ssh_cmd = ssh_str.format(uid, addr_only)
         cd_cmd = cd_str.format(application_info['node_dir_path'])
         docker_build_cmd = cd_cmd + ' ; sudo docker compose build'
         #print(ssh_cmd + ' ' + docker_build_cmd)
@@ -173,11 +173,46 @@ def setup_docker_swarm(published, target, registry):
     logger.info('----------------')
 
 
-def join_docker_swarm(node_ssh_list):
+def join_docker_swarm(node_ssh_list, manager_addr):
     logger.info('----------------')
     logger.info('Joining docker swarm from other nodes...')
     swarm_join_cmd = utils.parse_swarm_join_token_worker()
     logger.info('Swarm join command: ' + swarm_join_cmd)
+
+    curr_dir = os.getcwd()
+    node_ssh_list_path = curr_dir + '/../node-ssh-lists/' + node_ssh_list
+    if not os.path.isfile(node_ssh_list_path):
+        ValueError('specified ssh command file does not exist grpc-hotel-ipu/ssh-node-lists')
+    node_ssh_lines_unfiltered = []
+    for ssh_line in [line.strip() for line in open(node_ssh_list_path).readlines()]:
+        if manager_addr not in ssh_line:
+            node_ssh_lines_unfiltered.append(ssh_line)
+    node_ssh_lines = []
+    for word_list in [line.split()[:-1] for line in node_ssh_lines_unfiltered]:
+        full_line = ''
+        for word in word_list:
+            full_line += (word + ' ')
+        node_ssh_lines.append(full_line.strip())
+    node_labels = [line.split()[-1] for line in node_ssh_lines_unfiltered]
+
+    ssh_str = 'ssh {0}@{1}'
+    uid = os.getlogin()
+
+    procs_list = []
+    for ssh_line in node_ssh_lines:
+        addr_only = utils.extract_ssh_addr(ssh_line)
+        ssh_cmd = ssh_str.format(uid, addr_only)
+        procs_list.append(subprocess.Popen(ssh_cmd.split() + [swarm_join_cmd]))
+    for proc in procs_list:
+        proc.wait()
+
+    #for line in node_ssh_lines_unfiltered:
+    #    print(line)
+    #for line in node_ssh_lines:
+    #    print(line)
+    #for label in node_labels:
+    #    print(label)
+
     logger.info('----------------')
 
 
@@ -247,6 +282,10 @@ def get_args():
                         dest='join_docker_swarm',
                         action='store_true',
                         help='specify arg to join docker swarm from other nodes')
+    parser.add_argument('--manager-addr',
+                        dest='manager_addr',
+                        type=str,
+                        help='provide name of the node that will manage node and run the workload generator')
     # Starting DeathStarBench applications on CloudLab nodes after setup and swarm initialization
     parser.add_argument('--start-application',
                         dest='start_application',
@@ -276,6 +315,8 @@ if __name__ == '__main__':
     if args.join_docker_swarm:
         if args.node_ssh_list is None:
             raise ValueError('must provide file containing CloudLab ssh node info for application setup')
-        join_docker_swarm(args.node_ssh_list)
+        if args.manager_addr is None:
+            raise ValueError('must provide ssh address of the swarm manager node')
+        join_docker_swarm(args.node_ssh_list, args.manager_addr)
     if args.leave_docker_swarm:
         leave_docker_swarm(args.is_manager)

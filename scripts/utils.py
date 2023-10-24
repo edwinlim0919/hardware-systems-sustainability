@@ -51,7 +51,7 @@ def parse_swarm_join_token_worker():
     join_cmd = ''
     for line in join_token_worker_text.splitlines():
         if 'docker swarm join' in line:
-            join_cmd = line.strip()
+            join_cmd = 'sudo ' + line.strip()
     if join_cmd == '':
         raise ValueError('no valid docker join command found')
     return join_cmd
