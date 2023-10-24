@@ -189,13 +189,7 @@ def join_docker_swarm(node_ssh_list, manager_addr):
     for proc in procs_list:
         proc.wait()
 
-    #for line in node_ssh_lines_unfiltered:
-    #    print(line)
-    #for line in node_ssh_lines:
-    #    print(line)
-    #for label in node_labels:
-    #    print(label)
-
+    logger.info('All nodes have joined Docker Swarm successfully')
     logger.info('----------------')
 
 
