@@ -23,5 +23,5 @@ sudo docker node update --label-add foo --label-add bar=baz rck26s5fcl0j1d6a7hjp
 
 python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
 python3 main.py --join-docker-swarm --node-ssh-list c6420_16.txt --manager-addr clnode183.clemson.cloudlab.us
-python3 main.py --leave-docker swarm --node-ssh-list c6420_16.txt --manager-addr clnode183.clemson.cloudlab.us
+python3 main.py --leave-docker-swarm --node-ssh-list c6420_16.txt --manager-addr clnode183.clemson.cloudlab.us
 python3 main.py --label-docker-swarm --node-ssh-list c6420_16.txt
