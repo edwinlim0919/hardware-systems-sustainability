@@ -14,6 +14,9 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('grpc-hotel-ipu')
 
 def setup_application(application_name, replace_zip, node_ssh_list):
+    logger.info('----------------')
+    logger.info('Setting up ' + application_name_upper + ' on all Docker Swarm nodes...')
+
     application_name_upper = application_name.upper()
     if application_name_upper not in metadata.application_info:
         ValueError('specified application does not exist in metadata.appication_info')
@@ -37,8 +40,6 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     zip_str = 'zip -r {0} {1}'
     zip_cmd = zip_str.format(application_zip_path,
                              zip_cmd_arg1)
-    logger.info('----------------')
-    logger.info('Setting up ' + application_name_upper + '...')
     if os.path.isfile(application_zip_path) and not replace_zip:
         logger.info(application_zip_path + ' already exists and replace-zip not specified, skipping zip step')
     else:
@@ -133,11 +134,14 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     for proc in procs_list:
         proc.wait()
 
-    logger.info('Set up ' + application_name + ' application successfully.')
+    logger.info('Set up ' + application_name + ' on all Docker Swarm nodes successfully')
     logger.info('----------------')
 
 
 def setup_docker_swarm(published, target, registry):
+    logger.info('----------------')
+    logger.info('Setting up Docker Swarm with current node as manager...')
+
     advertise_addr = utils.parse_ifconfig()
     docker_swarm_init_str = 'sudo docker swarm init ' + \
                             '--advertise-addr {0}'
@@ -148,8 +152,6 @@ def setup_docker_swarm(published, target, registry):
     docker_service_create_cmd = docker_service_create_str.format(published,
                                                                  target,
                                                                  registry)
-    logger.info('----------------')
-    logger.info('Setting up docker swarm...')
     logger.info('advertise-addr: ' + advertise_addr)
     logger.info('Initializing docker swarm...')
     subprocess.Popen(docker_swarm_init_cmd.split()).wait()
@@ -164,7 +166,7 @@ def setup_docker_swarm(published, target, registry):
 
 def join_docker_swarm(node_ssh_list, manager_addr):
     logger.info('----------------')
-    logger.info('Joining docker swarm from other nodes...')
+    logger.info('Joining Docker Swarm from other nodes...')
     swarm_join_cmd = utils.parse_swarm_join_token_worker()
     logger.info('Swarm join command: ' + swarm_join_cmd)
 
@@ -195,7 +197,7 @@ def join_docker_swarm(node_ssh_list, manager_addr):
 
 def leave_docker_swarm(node_ssh_list, manager_addr):
     logger.info('----------------')
-    logger.info('Leaving docker swarm from other nodes...')
+    logger.info('Leaving Docker Swarm from all nodes...')
     swarm_leave_cmd = 'sudo docker swarm leave --force'
     logger.info('Swarm leave command: ' + swarm_leave_cmd)
 
@@ -233,29 +235,22 @@ def leave_docker_swarm(node_ssh_list, manager_addr):
     logger.info('----------------')
 
 
+def label_docker_swarm(node_ssh_list):
+    logger.info('----------------')
+    logger.info('Labeling all docker swarm nodes...')
+
+    utils.parse_node_ls()
+
+    logger.info('All Docker Swarm nodes have been labeled successfully')
+    logger.info('----------------')
+
+
 #def setup_application(application_name, replace_zip, node_ssh_list):
 
 
 def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
 
-    # Setting up docker swarm
-    parser.add_argument('--setup-docker-swarm',
-                        dest='setup_docker_swarm',
-                        action='store_true',
-                        help='specify arg to set up docker swarm')
-    parser.add_argument('--published',
-                        dest='published',
-                        type=int,
-                        help='specify the published value for creating docker registry service')
-    parser.add_argument('--target',
-                        dest='target',
-                        type=int,
-                        help='specify the target value for creating docker registry service')
-    parser.add_argument('--registry',
-                        dest='registry',
-                        type=int,
-                        help='specify the registry value for creating docker registry service')
     # Setting up DeathStarBench applications on CloudLab nodes
     parser.add_argument('--setup-application',
                         dest='setup_application',
@@ -273,6 +268,23 @@ def get_args():
                         dest='node_ssh_list',
                         type=str,
                         help='provide name of file within grpc-hotel-ipu/node-ssh-lists/ containing CloudLab ssh commands')
+    # Setting up docker swarm
+    parser.add_argument('--setup-docker-swarm',
+                        dest='setup_docker_swarm',
+                        action='store_true',
+                        help='specify arg to set up docker swarm')
+    parser.add_argument('--published',
+                        dest='published',
+                        type=int,
+                        help='specify the published value for creating docker registry service')
+    parser.add_argument('--target',
+                        dest='target',
+                        type=int,
+                        help='specify the target value for creating docker registry service')
+    parser.add_argument('--registry',
+                        dest='registry',
+                        type=int,
+                        help='specify the registry value for creating docker registry service')
     # Joining docker swarm from other nodes
     parser.add_argument('--join-docker-swarm',
                         dest='join_docker_swarm',
@@ -282,16 +294,21 @@ def get_args():
                         dest='manager_addr',
                         type=str,
                         help='provide name of the node that will manage node and run the workload generator')
-    # Starting DeathStarBench applications on CloudLab nodes after setup and swarm initialization
-    parser.add_argument('--start-application',
-                        dest='start_application',
-                        action='store_true',
-                        help='specify arg to start specified application')
     # Leaving docker swarm
     parser.add_argument('--leave-docker-swarm',
                         dest='leave_docker_swarm',
                         action='store_true',
                         help='specify arg to leave docker swarm')
+    # Applying labels to docker swarm nodes
+    parser.add_argument('--label-docker-swarm',
+                        dest='label_docker_swarm',
+                        action='store_true',
+                        help='specify arg to label docker swarm')
+    # Starting DeathStarBench applications on CloudLab nodes after setup and swarm initialization
+    parser.add_argument('--start-application',
+                        dest='start_application',
+                        action='store_true',
+                        help='specify arg to start specified application')
 
     return parser.parse_args()
 
@@ -328,3 +345,8 @@ if __name__ == '__main__':
         if args.manager_addr is None:
             raise ValueError('must provide ssh address of the swarm manager node')
         leave_docker_swarm(args.node_ssh_list, args.manager_addr)
+
+    if args.label_docker_swarm:
+        if args.node_ssh_list is None:
+            raise ValueError('must provide file containing CloudLab ssh node info for labeling nodes')
+        label_docker_swarm(args.node_ssh_list)

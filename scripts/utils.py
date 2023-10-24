@@ -61,11 +61,7 @@ def parse_ifconfig():
 
 # parses output of 'sudo docker swarm join-token worker'
 def parse_swarm_join_token_worker():
-    join_token_worker_proc = subprocess.Popen(['sudo',
-                                               'docker',
-                                               'swarm',
-                                               'join-token',
-                                               'worker'],
+    join_token_worker_proc = subprocess.Popen(['sudo', 'docker', 'swarm', 'join-token', 'worker'],
                                               stdout=subprocess.PIPE,
                                               stderr=subprocess.STDOUT)
     join_token_worker_text = join_token_worker_proc.communicate()[0].decode('utf-8')
@@ -76,3 +72,12 @@ def parse_swarm_join_token_worker():
     if join_cmd == '':
         raise ValueError('no valid docker join command found')
     return join_cmd
+
+
+# parses output of 'sudo docker node ls'
+def parse_node_ls():
+    node_ls_proc = subprocess.Popen(['sudo', 'docker', 'node', 'ls'],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT)
+    node_ls_text = node_ls_proc.communicate()[0].decode('utf-8')
+    print(node_ls_text)
