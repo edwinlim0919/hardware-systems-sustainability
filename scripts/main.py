@@ -183,13 +183,10 @@ def join_docker_swarm(node_ssh_list, manager_addr):
     node_labels = [line.split()[-1] for line in node_ssh_lines_unfiltered]
 
     uid = os.getlogin()
-    procs_list = []
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
         ssh_cmd = utils.ssh_str.format(uid, addr_only)
-        procs_list.append(subprocess.Popen(ssh_cmd.split() + [swarm_join_cmd]))
-    for proc in procs_list:
-        proc.wait()
+        subprocess.Popen(ssh_cmd.split() + [swarm_join_cmd]).wait()
 
     logger.info('All nodes have joined Docker Swarm successfully')
     logger.info('----------------')
