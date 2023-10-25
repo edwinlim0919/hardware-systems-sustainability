@@ -26,4 +26,5 @@ python3 main.py --join-docker-swarm --node-ssh-list c6420_16.txt --manager-addr 
 python3 main.py --leave-docker-swarm --node-ssh-list c6420_16.txt --manager-addr clnode183.clemson.cloudlab.us
 python3 main.py --label-docker-swarm --node-ssh-list c6420_16.txt
 python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list c6420_16.txt --replace-zip
-python3 main.pu --start-application
+python3 main.py --start-application --manager-addr clnode183.clemson.cloudlab.us
+--application-name hotelreservation_grpc --swarm-yml-name hotelreservation_grpc_c6420_16_docker-compose-swarm.yml

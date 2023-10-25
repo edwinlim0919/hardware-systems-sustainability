@@ -15,9 +15,9 @@ logger = logging.getLogger('grpc-hotel-ipu')
 
 def setup_application(application_name, replace_zip, node_ssh_list):
     logger.info('----------------')
+    application_name_upper = application_name.upper()
     logger.info('Setting up ' + application_name_upper + ' on all Docker Swarm nodes...')
 
-    application_name_upper = application_name.upper()
     if application_name_upper not in metadata.application_info:
         ValueError('specified application does not exist in metadata.appication_info')
     application_info = metadata.application_info[application_name_upper]
@@ -254,13 +254,23 @@ def label_docker_swarm(node_ssh_list):
     logger.info('----------------')
 
 
-def start_application(manager_addr):
-    rebuilt_push_images_cmd = 'bash ~/rebuilt-push-images.sh'
+def start_application(manager_addr, docker_application_name):
+    logger.info('----------------')
+    logger.info('Starting')
+
+    build_images_cmd = 'sudo docker compose build'
     uid = os.getlogin()
     ssh_cmd = utils.ssh_str.format(uid, manager_addr)
     print(ssh_cmd)
+    print(build_images_cmd)
+    #subprocess.Popen(ssh_cmd.split() + [build_images_cmd]).wait()
+
+    rebuilt_push_images_cmd = 'bash ~/rebuilt-push-images.sh'
+    print(ssh_cmd)
     print(rebuilt_push_images_cmd)
     #subprocess.Popen(ssh_cmd.split() + [rebuilt_push_images_cmd]).wait()
+
+    #application_deploy_cmd = 
 
 
 def get_args():
@@ -324,6 +334,14 @@ def get_args():
                         dest='start_application',
                         action='store_true',
                         help='specify arg to start specified application')
+    parser.add_argument('--docker-application-name',
+                        dest='docker_application_name',
+                        type=str,
+                        help='specify the name of the docker application (may be different than --application-name)')
+    parser.add_argument('--swarm-yml-name',
+                        dest='swarm_yml_name',
+                        type=str,
+                        'provide name of docker-compose-swarm yml file within grpc-hotel-ipu/configs containing swarm node mappings')
 
     return parser.parse_args()
 
