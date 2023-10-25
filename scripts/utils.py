@@ -11,6 +11,7 @@ ssh_str = 'ssh {0}@{1}'
 unzip_str = 'yes | unzip {0}'
 cp_str = 'cp -R {0} {1}'
 cd_str = 'cd {0}'
+label_add_str = 'sudo docker node update --label-add {0} {1}'
 
 
 # Validates that ip_address string is in a valid format
@@ -80,4 +81,5 @@ def parse_node_ls():
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
     node_ls_text = node_ls_proc.communicate()[0].decode('utf-8')
-    print(node_ls_text)
+    node_ids = [line.split()[0] for line in node_ls_text.splitlines()[1:]]
+    return node_ids

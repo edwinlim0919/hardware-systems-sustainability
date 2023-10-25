@@ -232,17 +232,35 @@ def leave_docker_swarm(node_ssh_list, manager_addr):
     logger.info('----------------')
 
 
+# TODO: After running this terminal seems to get funky, don't know why
 def label_docker_swarm(node_ssh_list):
     logger.info('----------------')
     logger.info('Labeling all docker swarm nodes...')
 
-    utils.parse_node_ls()
+    node_ids = utils.parse_node_ls()
+    node_ssh_lines_unfiltered = [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]
+    node_label_lines = [line.split()[-1] for line in node_ssh_lines_unfiltered]
+    if len(node_ids) != len(node_label_lines):
+        raise ValueError("node_ids has a length mismatch with node_label_lines")
+
+    procs_list = []
+    for i in range(len(node_label_lines)):
+        label_add_cmd = utils.label_add_str.format(node_label_lines[i], node_ids[i])
+        procs_list.append(subprocess.Popen(label_add_cmd.split()))
+    for proc in procs_list:
+        proc.wait()
 
     logger.info('All Docker Swarm nodes have been labeled successfully')
     logger.info('----------------')
 
 
-#def setup_application(application_name, replace_zip, node_ssh_list):
+def start_application(manager_addr):
+    rebuilt_push_images_cmd = 'bash ~/rebuilt-push-images.sh'
+    uid = os.getlogin()
+    ssh_cmd = utils.ssh_str.format(uid, manager_addr)
+    print(ssh_cmd)
+    print(rebuilt_push_images_cmd)
+    #subprocess.Popen(ssh_cmd.split() + [rebuilt_push_images_cmd]).wait()
 
 
 def get_args():
@@ -347,3 +365,9 @@ if __name__ == '__main__':
         if args.node_ssh_list is None:
             raise ValueError('must provide file containing CloudLab ssh node info for labeling nodes')
         label_docker_swarm(args.node_ssh_list)
+
+    if args.start_application:
+        if args.manager_addr is None:
+            raise ValueError('must provide ssh address of the swarm manager node')
+        start_application(args.manager_addr)
+
