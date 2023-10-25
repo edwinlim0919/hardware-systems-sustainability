@@ -29,12 +29,18 @@ def extract_path_end(path):
     return path.split('/')[-1]
 
 
-def get_node_ssh_list_file(node_ssh_list):
+#def get_node_ssh_list_file(node_ssh_list):
+#    curr_dir = os.getcwd()
+#    node_ssh_list_path = curr_dir + '/../node-ssh-lists/' + node_ssh_list
+#    if not os.path.isfile(node_ssh_list_path):
+#        ValueError('specified ssh info file does not exist in grpc-hotel-ipu/ssh-node-lists')
+#    return open(node_ssh_list_path)
+def get_file_relative_path(file_name, relative_path):
     curr_dir = os.getcwd()
-    node_ssh_list_path = curr_dir + '/../node-ssh-lists/' + node_ssh_list
-    if not os.path.isfile(node_ssh_list_path):
-        ValueError('specified ssh info file does not exist in grpc-hotel-ipu/ssh-node-lists')
-    return open(node_ssh_list_path)
+    file_path = curr_dir + '/' + relative_path + '/' + file_name
+    if not os.path.isfile(file_path):
+        ValueError('file ' + file_name + ' does not exist in ' + file_path)
+    return open(file_path)
 
 
 # parses output of 'ifconfig -a'

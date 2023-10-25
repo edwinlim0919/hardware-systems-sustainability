@@ -22,7 +22,8 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         ValueError('specified application does not exist in metadata.appication_info')
     application_info = metadata.application_info[application_name_upper]
 
-    node_ssh_lines_unfiltered = [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]
+    #node_ssh_lines_unfiltered = [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]
+    node_ssh_lines_unfiltered = [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]
     node_ssh_lines = []
     for word_list in [line.split()[:-1] for line in node_ssh_lines_unfiltered]:
         full_line = ''
@@ -171,7 +172,8 @@ def join_docker_swarm(node_ssh_list, manager_addr):
     logger.info('Swarm join command: ' + swarm_join_cmd)
 
     node_ssh_lines_unfiltered = []
-    for ssh_line in [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]:
+    #for ssh_line in [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]:
+    for ssh_line in [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]:
         if manager_addr not in ssh_line:
             node_ssh_lines_unfiltered.append(ssh_line)
     node_ssh_lines = []
@@ -200,7 +202,8 @@ def leave_docker_swarm(node_ssh_list, manager_addr):
 
     node_ssh_lines_unfiltered = []
     node_ssh_lines_manager = ''
-    for ssh_line in [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]:
+    #for ssh_line in [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]:
+    for ssh_line in [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]:
         if manager_addr not in ssh_line:
             node_ssh_lines_unfiltered.append(ssh_line)
         else:
@@ -238,7 +241,8 @@ def label_docker_swarm(node_ssh_list):
     logger.info('Labeling all docker swarm nodes...')
 
     node_ids = utils.parse_node_ls()
-    node_ssh_lines_unfiltered = [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]
+    #node_ssh_lines_unfiltered = [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]
+    node_ssh_lines_unfiltered = [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]
     node_label_lines = [line.split()[-1] for line in node_ssh_lines_unfiltered]
     if len(node_ids) != len(node_label_lines):
         raise ValueError("node_ids has a length mismatch with node_label_lines")
