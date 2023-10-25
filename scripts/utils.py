@@ -29,12 +29,7 @@ def extract_path_end(path):
     return path.split('/')[-1]
 
 
-#def get_node_ssh_list_file(node_ssh_list):
-#    curr_dir = os.getcwd()
-#    node_ssh_list_path = curr_dir + '/../node-ssh-lists/' + node_ssh_list
-#    if not os.path.isfile(node_ssh_list_path):
-#        ValueError('specified ssh info file does not exist in grpc-hotel-ipu/ssh-node-lists')
-#    return open(node_ssh_list_path)
+# opens and returns file handle of file relative to grpc-hotel-ipu/
 def get_file_relative_path(file_name, relative_path):
     curr_dir = os.getcwd()
     file_path = curr_dir + '/' + relative_path + '/' + file_name

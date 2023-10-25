@@ -22,7 +22,6 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         ValueError('specified application does not exist in metadata.appication_info')
     application_info = metadata.application_info[application_name_upper]
 
-    #node_ssh_lines_unfiltered = [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]
     node_ssh_lines_unfiltered = [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]
     node_ssh_lines = []
     for word_list in [line.split()[:-1] for line in node_ssh_lines_unfiltered]:
@@ -172,7 +171,6 @@ def join_docker_swarm(node_ssh_list, manager_addr):
     logger.info('Swarm join command: ' + swarm_join_cmd)
 
     node_ssh_lines_unfiltered = []
-    #for ssh_line in [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]:
     for ssh_line in [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]:
         if manager_addr not in ssh_line:
             node_ssh_lines_unfiltered.append(ssh_line)
@@ -202,7 +200,6 @@ def leave_docker_swarm(node_ssh_list, manager_addr):
 
     node_ssh_lines_unfiltered = []
     node_ssh_lines_manager = ''
-    #for ssh_line in [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]:
     for ssh_line in [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]:
         if manager_addr not in ssh_line:
             node_ssh_lines_unfiltered.append(ssh_line)
@@ -241,7 +238,6 @@ def label_docker_swarm(node_ssh_list):
     logger.info('Labeling all docker swarm nodes...')
 
     node_ids = utils.parse_node_ls()
-    #node_ssh_lines_unfiltered = [line.strip() for line in utils.get_node_ssh_list_file(node_ssh_list).readlines()]
     node_ssh_lines_unfiltered = [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]
     node_label_lines = [line.split()[-1] for line in node_ssh_lines_unfiltered]
     if len(node_ids) != len(node_label_lines):
@@ -249,7 +245,7 @@ def label_docker_swarm(node_ssh_list):
 
     procs_list = []
     for i in range(len(node_label_lines)):
-        label_add_cmd = utils.label_add_str.format(node_label_lines[i], node_ids[i])
+        label_add_cmd = utils.label_add_str.format(node_label_lines[i] + '=true', node_ids[i])
         procs_list.append(subprocess.Popen(label_add_cmd.split()))
     for proc in procs_list:
         proc.wait()
@@ -258,23 +254,38 @@ def label_docker_swarm(node_ssh_list):
     logger.info('----------------')
 
 
-def start_application(manager_addr, docker_application_name):
+def start_application(manager_addr, application_name, docker_application_name, swarm_yml_name):
     logger.info('----------------')
-    logger.info('Starting')
-
-    build_images_cmd = 'sudo docker compose build'
     uid = os.getlogin()
     ssh_cmd = utils.ssh_str.format(uid, manager_addr)
-    print(ssh_cmd)
-    print(build_images_cmd)
-    #subprocess.Popen(ssh_cmd.split() + [build_images_cmd]).wait()
+    application_name_upper = application_name.upper()
+    logger.info('Starting ' + application_name_upper + ' across Docker Swarm nodes')
+    if application_name_upper not in metadata.application_info:
+        ValueError('specified application does not exist in metadata.appication_info')
+    application_info = metadata.application_info[application_name_upper]
+    cd_cmd = utils.cd_str.format(application_info['node_dir_path'])
 
-    rebuilt_push_images_cmd = 'bash ~/rebuilt-push-images.sh'
-    print(ssh_cmd)
-    print(rebuilt_push_images_cmd)
-    #subprocess.Popen(ssh_cmd.split() + [rebuilt_push_images_cmd]).wait()
+    logger.info('Building all the Docker images')
+    build_images_cmd = 'sudo docker compose build'
+    subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [build_images_cmd]).wait()
+    #print(ssh_cmd + cd_cmd + '&&')
 
-    #application_deploy_cmd = 
+    logger.info('Pushing Docker images to local registry')
+    rebuilt_push_images_cmd = 'bash ~/scripts/rebuilt-push-images.sh'
+    subprocess.Popen(ssh_cmd.split() + [rebuilt_push_images_cmd]).wait()
+
+    logger.info('Copying Docker Swarm yml to application directory in manager node')
+    scp_dest = application_info['node_dir_path'] + '/' + swarm_yml_name
+    scp_src = os.getcwd() + '/../configs/' + swarm_yml_name
+    scp_cmd = utils.scp_str.format(scp_src, uid, manager_addr, scp_dest)
+    subprocess.Popen(scp_cmd.split()).wait()
+
+    logger.info('Deploying Docker Swarm to start application')
+    application_deploy_cmd = utils.application_deploy_str.format(swarm_yml_name, docker_application_name)
+    subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [application_deploy_cmd]).wait()
+
+    logger.info(application_name_upper + ' successfully deployed')
+    logger.info('----------------')
 
 
 def get_args():
@@ -345,7 +356,7 @@ def get_args():
     parser.add_argument('--swarm-yml-name',
                         dest='swarm_yml_name',
                         type=str,
-                        'provide name of docker-compose-swarm yml file within grpc-hotel-ipu/configs containing swarm node mappings')
+                        help='provide name of docker-compose-swarm yml file within grpc-hotel-ipu/configs containing swarm node mappings')
 
     return parser.parse_args()
 
@@ -391,5 +402,13 @@ if __name__ == '__main__':
     if args.start_application:
         if args.manager_addr is None:
             raise ValueError('must provide ssh address of the swarm manager node')
-        start_application(args.manager_addr)
-
+        if args.application_name is None:
+            raise ValueError('application name must be provided for starting the application')
+        if args.docker_application_name is None:
+            raise ValueError('docker application name must be provided for starting the application')
+        if args.swarm_yml_name is None:
+            raise ValueError('must provide name of Docker Swarm yml within grpc-hotel-ipu/configs')
+        start_application(args.manager_addr,
+                          args.application_name,
+                          args.docker_application_name,
+                          args.swarm_yml_name)
