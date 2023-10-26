@@ -1,0 +1,406 @@
+version: "3"
+services:
+  consul:
+    networks:
+      - default
+      - secondary
+    image: consul:1.15.4
+    ports:
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:53/udp"
+    deploy:
+      placement:
+        constraints: [node.labels.node3 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  frontend:
+    networks:
+      - default
+      - secondary
+    environment:
+      - TLS
+    image: localhost:7696/hotel_reserv_frontend_modified:latest
+    entrypoint: frontend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - consul
+      - search
+      - user
+      - profile
+      - recommendation
+      - reservation
+    deploy:
+      placement:
+        constraints: [node.labels.node2 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  profile:
+    networks:
+      - default
+      - secondary
+    environment:
+      - TLS
+    image: localhost:7696/hotel_reserv_profile_single_node:latest
+    entrypoint: profile
+    depends_on:
+      - mongodb-profile
+      - memcached-profile
+      - consul
+    deploy:
+      placement:
+        constraints: [node.labels.node4 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  search:
+    networks:
+      - default
+      - secondary
+    image: localhost:7696/hotel_reserv_search_single_node:latest
+    entrypoint: search
+    depends_on:
+      - consul
+    environment:
+      - TLS
+    deploy:
+      placement:
+        constraints: [node.labels.node5 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  geo:
+    networks:
+      - default
+      - secondary
+    environment:
+      - TLS
+    image: localhost:7696/hotel_reserv_geo_single_node:latest
+    entrypoint: geo
+    depends_on:
+      - mongodb-geo
+      - consul
+    deploy:
+      placement:
+        constraints: [node.labels.node6 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  rate:
+    networks:
+      - default
+      - secondary
+    environment:
+      - TLS
+    image: localhost:7696/hotel_reserv_rate_single_node:latest
+    entrypoint: rate
+    depends_on:
+      - mongodb-rate
+      - memcached-rate
+      - consul
+    deploy:
+      placement:
+        constraints: [node.labels.node7 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  recommendation:
+    networks:
+      - default
+      - secondary
+    environment:
+      - TLS
+    image: localhost:7696/hotel_reserv_recommend_single_node:latest
+    entrypoint: recommendation
+    depends_on:
+      - mongodb-recommendation
+      - consul
+    deploy:
+      placement:
+        constraints: [node.labels.node8 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  user:
+    networks:
+      - default
+      - secondary
+    environment:
+      - TLS
+    image: localhost:7696/hotel_reserv_user_single_node:latest
+    entrypoint: user
+    depends_on:
+      - mongodb-user
+      - consul
+    deploy:
+      placement:
+        constraints: [node.labels.node9 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  reservation:
+    networks:
+      - default
+      - secondary
+    environment:
+      - TLS
+    image: localhost:7696/hotel_reserv_rsv_single_node:latest
+    entrypoint: reservation
+    depends_on:
+      - mongodb-reservation
+      - memcached-reserve
+      - consul
+    deploy:
+      placement:
+        constraints: [node.labels.node10 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  jaeger:
+    networks:
+      - default
+      - secondary
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "14269"
+      - "5778:5778"
+      - "14268:14268"
+      - "14267"
+      - "16686:16686"
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+    deploy:
+      placement:
+        constraints: [node.labels.node11 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  memcached-rate:
+    networks:
+      - default
+      - secondary
+    image: memcached
+    hostname: user-memcached
+    environment:
+      - MEMCACHED_CACHE_SIZE=128
+      - MEMCACHED_THREADS=2
+    logging:
+      options:
+        max-size: 50m
+    deploy:
+      placement:
+        constraints: [node.labels.node12 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  memcached-profile:
+    networks:
+      - default
+      - secondary
+    image: memcached
+    hostname: user-memcached
+    environment:
+      - MEMCACHED_CACHE_SIZE=128
+      - MEMCACHED_THREADS=2
+    logging:
+      options:
+        max-size: 50m
+    deploy:
+      placement:
+        constraints: [node.labels.node13 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  memcached-reserve:
+    networks:
+      - default
+      - secondary
+    image: memcached
+    hostname: user-memcached
+    environment:
+      - MEMCACHED_CACHE_SIZE=128
+      - MEMCACHED_THREADS=2
+    logging:
+      options:
+        max-size: 50m
+    deploy:
+      placement:
+        constraints: [node.labels.node14 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  mongodb-geo:
+    networks:
+      - default
+      - secondary
+    image: mongo:4.4.6
+    hostname: geo-db
+    volumes:
+      - geo:/data/db
+    deploy:
+      placement:
+        constraints: [node.labels.node15 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  mongodb-profile:
+    networks:
+      - default
+      - secondary
+    image: mongo:4.4.6
+    hostname: profile-db
+    volumes:
+      - profile:/data/db
+    deploy:
+      placement:
+        constraints: [node.labels.node16 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+    command: mongod --replSet mongodb-profile-replset --port 27017
+    ports:
+      - 27017:27017
+
+  mongodb-profile-1:
+    networks:
+      - default
+      - secondary
+    image: mongo:4.4.6
+    hostname: profile-db
+    volumes:
+      - profile:/data/db
+    deploy:
+      placement:
+        constraints: [node.labels.node17 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+    command: mongod --replSet mongodb-profile-replset --port 27017
+    ports:
+      - 27117:27017
+
+  mongodb-profile-2:
+    networks:
+      - default
+      - secondary
+    image: mongo:4.4.6
+    hostname: profile-db
+    volumes:
+      - profile:/data/db
+    deploy:
+      placement:
+        constraints: [node.labels.node18 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+    command: mongod --replSet mongodb-profile-replset --port 27017
+    ports:
+      - 27217:27017
+
+  mongo-profile-init:
+    networks:
+      - default
+      - secondary
+    image: mongo:4.4.6
+    depends_on:
+      - mongodb-profile
+      - mongodb-profile-1
+      - mongodb-profile-2
+    volumes:
+      - ./scripts:/scripts
+    deploy:
+      placement:
+        constraints: [node.labels.node19 == true]
+      restart_policy:
+        condition: any
+    entrypoint: /scripts/mongodb_profile_replicaset_setup.sh
+
+  mongodb-rate:
+    networks:
+      - default
+      - secondary
+    image: mongo:4.4.6
+    hostname: rate-db
+    volumes:
+      - rate:/data/db
+    deploy:
+      placement:
+        constraints: [node.labels.node20 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  mongodb-recommendation:
+    networks:
+      - default
+      - secondary
+    image: mongo:4.4.6
+    hostname: recommendation-db
+    volumes:
+      - recommendation:/data/db
+    deploy:
+      placement:
+        constraints: [node.labels.node21 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  mongodb-reservation:
+    networks:
+      - default
+      - secondary
+    image: mongo:4.4.6
+    hostname: reservation-db
+    volumes:
+      - reservation:/data/db
+    deploy:
+      placement:
+        constraints: [node.labels.node22 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+  mongodb-user:
+    networks:
+      - default
+      - secondary
+    image: mongo:4.4.6
+    hostname: user-db
+    volumes:
+      - user:/data/db
+    deploy:
+      placement:
+        constraints: [node.labels.node23 == true]
+      replicas: 1
+      restart_policy:
+        condition: any
+
+volumes:
+  geo:
+  profile:
+  rate:
+  recommendation:
+  reservation:
+  user:
+
+networks:
+  secondary:  
