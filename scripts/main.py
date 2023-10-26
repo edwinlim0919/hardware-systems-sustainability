@@ -243,12 +243,9 @@ def label_docker_swarm(node_ssh_list):
     if len(node_ids) != len(node_label_lines):
         raise ValueError("node_ids has a length mismatch with node_label_lines")
 
-    procs_list = []
     for i in range(len(node_label_lines)):
         label_add_cmd = utils.label_add_str.format(node_label_lines[i] + '=true', node_ids[i])
-        procs_list.append(subprocess.Popen(label_add_cmd.split()))
-    for proc in procs_list:
-        proc.wait()
+        subprocess.Popen(label_add_cmd.split()).wait()
 
     logger.info('All Docker Swarm nodes have been labeled successfully')
     logger.info('----------------')

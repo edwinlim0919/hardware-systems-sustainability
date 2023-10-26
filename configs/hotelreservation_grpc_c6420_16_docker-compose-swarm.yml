@@ -223,7 +223,7 @@ services:
         max-size: 50m
     deploy:
       placement:
-        constraints: [node.labels.node6 == true]
+        constraints: [node.labels.node7 == true]
       replicas: 1
       restart_policy:
         condition: any
@@ -242,7 +242,7 @@ services:
         max-size: 50m
     deploy:
       placement:
-        constraints: [node.labels.node7 == true]
+        constraints: [node.labels.node8 == true]
       replicas: 1
       restart_policy:
         condition: any
@@ -257,7 +257,7 @@ services:
       - geo:/data/db
     deploy:
       placement:
-        constraints: [node.labels.node7 == true]
+        constraints: [node.labels.node9 == true]
       replicas: 1
       restart_policy:
         condition: any
@@ -272,7 +272,7 @@ services:
       - profile:/data/db
     deploy:
       placement:
-        constraints: [node.labels.node8 == true]
+        constraints: [node.labels.node7 == true]
       replicas: 1
       restart_policy:
         condition: any
@@ -290,7 +290,7 @@ services:
       - profile:/data/db
     deploy:
       placement:
-        constraints: [node.labels.node8 == true]
+        constraints: [node.labels.node10 == true]
       replicas: 1
       restart_policy:
         condition: any
@@ -308,7 +308,7 @@ services:
       - profile:/data/db
     deploy:
       placement:
-        constraints: [node.labels.node9 == true]
+        constraints: [node.labels.node11 == true]
       replicas: 1
       restart_policy:
         condition: any
@@ -329,7 +329,7 @@ services:
       - ./scripts:/scripts
     deploy:
       placement:
-        constraints: [node.labels.node9 == true]
+        constraints: [node.labels.node12 == true]
       restart_policy:
         condition: any
     entrypoint: /scripts/mongodb_profile_replicaset_setup.sh
@@ -344,7 +344,7 @@ services:
       - rate:/data/db
     deploy:
       placement:
-        constraints: [node.labels.node10 == true]
+        constraints: [node.labels.node6 == true]
       replicas: 1
       restart_policy:
         condition: any
@@ -359,7 +359,7 @@ services:
       - recommendation:/data/db
     deploy:
       placement:
-        constraints: [node.labels.node10 == true]
+        constraints: [node.labels.node13 == true]
       replicas: 1
       restart_policy:
         condition: any
@@ -374,7 +374,7 @@ services:
       - reservation:/data/db
     deploy:
       placement:
-        constraints: [node.labels.node11 == true]
+        constraints: [node.labels.node8 == true]
       replicas: 1
       restart_policy:
         condition: any
@@ -389,7 +389,7 @@ services:
       - user:/data/db
     deploy:
       placement:
-        constraints: [node.labels.node11 == true]
+        constraints: [node.labels.node14 == true]
       replicas: 1
       restart_policy:
         condition: any
