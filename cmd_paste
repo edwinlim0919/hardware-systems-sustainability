@@ -22,8 +22,8 @@ docker swarm join --token SWMTKN-1-58dxvg46t1vbrhsf549fzl8e4ffjq9qparccl6wk40gux
 sudo docker node update --label-add foo --label-add bar=baz rck26s5fcl0j1d6a7hjpqkodr
 
 python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
-python3 main.py --join-docker-swarm --node-ssh-list c6420_24.txt --manager-addr clnode146.clemson.cloudlab.us
-python3 main.py --leave-docker-swarm --node-ssh-list c6420_24.txt --manager-addr clnode146.clemson.cloudlab.us
+python3 main.py --join-docker-swarm --node-ssh-list c6420_24.txt --manager-addr clnode109.clemson.cloudlab.us
+python3 main.py --leave-docker-swarm --node-ssh-list c6420_24.txt --manager-addr clnode109.clemson.cloudlab.us
 python3 main.py --label-docker-swarm --node-ssh-list c6420_24.txt
 python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list c6420_24.txt --replace-zip
-python3 main.py --start-application --manager-addr clnode146.clemson.cloudlab.us --application-name hotelreservation_grpc --docker-application-name hotelReservation --swarm-yml-name hotelreservation_grpc_c6420_24_docker-compose-swarm.yml
+python3 main.py --start-application --manager-addr clnode109.clemson.cloudlab.us --application-name hotelreservation_grpc --docker-application-name hotelReservation --swarm-yml-name hotelreservation_grpc_c6420_24_docker-compose-swarm.yml
