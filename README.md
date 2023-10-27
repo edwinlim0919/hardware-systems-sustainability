@@ -38,7 +38,7 @@ source ./setup.sh
 ```
 
 ## Setting up an application across CloudLab nodes
-First, you will need to make an .txt file in grpc-hotel-ipu/node-ssh-lists such as c6420_24.txt, which contains the ssh command for each node in your CloudLab experiment, as well as node label such as node<x>. You should just order these in increasing number for simplicity, and they correspond to placement constraints in the docker-compose-swarm.yml files within grpc-hotel-ipu/configs. Here is an example for a 24 node cluster (you will need to use your own cloudlab uid instead of edwinlim):
+First, you will need to make an .txt file in grpc-hotel-ipu/node-ssh-lists such as c6320_24.txt, which contains the ssh command for each node in your CloudLab experiment, as well as node label such as node<x>. You should just order these in increasing number for simplicity, and they correspond to placement constraints in the docker-compose-swarm.yml files within grpc-hotel-ipu/configs. Here is an example for a 24 node cluster (you will need to use your own cloudlab uid instead of edwinlim):
 ```
 ssh edwinlim@clnode109.clemson.cloudlab.us node0
 ssh edwinlim@clnode123.clemson.cloudlab.us node1
@@ -68,7 +68,7 @@ ssh edwinlim@clnode110.clemson.cloudlab.us node23
 
 Then, you can run scripts to zip the application, copy it to all the nodes, and run some setup scripts on the nodes to install dependencies. You can use a command like this, providing both the name of the application and the node ssh info from above (currently only the modified gRPC HotelReservation application is supported by the scripts). Run all these commands from grpc-hotel-ipu/scripts.
 ```bash
-python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list c6420_24.txt
+python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list c6320_24.txt
 ```
 
 ## Setting up a Docker Swarm
@@ -80,19 +80,19 @@ python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
 ## Joining the other nodes to the Docker Swarm
 Then, join the other nodes to the Docker Swarm as worker nodes by running the following command from the manager node. You will need to provide the node ssh info file, as well as the address of the manager node (without the "<uid>@" portion of the ssh command).
 ```bash
-python3 main.py --join-docker-swarm --node-ssh-list c6420_24.txt --manager-addr clnode109.clemson.cloudlab.us
+python3 main.py --join-docker-swarm --node-ssh-list c6320_24.txt --manager-addr clnode109.clemson.cloudlab.us
 ```
 
 ## Labeling the nodes in the Docker Swarm
 Once the other nodes are joined to the swarm, assign them the node<x> labels from the ssh node info with the following command. You will need to provide the ssh info file to the script.
 ```bash
-python3 main.py --label-docker-swarm --node-ssh-list c6420_24.txt
+python3 main.py --label-docker-swarm --node-ssh-list c6320_24.txt
 ```
 
 ## Starting the application
-Once all nodes have joined the swarm and have been labeled, you can now start the application. You will need a docker-compose-swarm.yml file in grpc-hotel-ipu/configs that contains information about each microservice and their node mappings. The example hotelreservation_grpc_c6420_24_docker-compose-swarm.yml maps each microservice onto its own node. In this example, node2-node23 host microservices. Node0 only runs the swarm manager, and node1 runs the workload generator. You can start the application with the following command, providing all the information. The --application-name argument is different from the --docker-application-name argument, but that's because the --aplication-name only holds random metadata needed for the Python scripting. The --docker-application-name argument is the name of the actual application within Docker.
+Once all nodes have joined the swarm and have been labeled, you can now start the application. You will need a docker-compose-swarm.yml file in grpc-hotel-ipu/configs that contains information about each microservice and their node mappings. The example hotelreservation_grpc_c6320_24_docker-compose-swarm.yml maps each microservice onto its own node. In this example, node2-node23 host microservices. Node0 only runs the swarm manager, and node1 runs the workload generator. You can start the application with the following command, providing all the information. The --application-name argument is different from the --docker-application-name argument, but that's because the --aplication-name only holds random metadata needed for the Python scripting. The --docker-application-name argument is the name of the actual application within Docker.
 ```bash
-python3 main.py --start-application --manager-addr clnode109.clemson.cloudlab.us --application-name hotelreservation_grpc --docker-application-name hotelReservation --swarm-yml-name hotelreservation_grpc_c6420_24_docker-compose-swarm.yml
+python3 main.py --start-application --manager-addr clnode109.clemson.cloudlab.us --application-name hotelreservation_grpc --docker-application-name hotelReservation --swarm-yml-name hotelreservation_grpc_c6320_24_docker-compose-swarm.yml
 ```
 Give the application a few minutes to start up, and you can periodically check the status with the following command. When the application is up and running, you should see a '1/1' for all the microservices under the 'Replicated' section.
 ```bash
@@ -106,7 +106,7 @@ curl -X GET "http://10.10.1.1:5000/hotels?inDate=2015-04-13&outDate=2015-04-15&l
 ## Taking down the Docker Swarm
 Once you are done with using the application, you can take down the Docker Swarm with the following command.
 ```bash
-python3 main.py --leave-docker-swarm --node-ssh-list c6420_24.txt --manager-addr clnode109.clemson.cloudlab.us
+python3 main.py --leave-docker-swarm --node-ssh-list c6320_24.txt --manager-addr clnode109.clemson.cloudlab.us
 ```
 
 ## Contributing
