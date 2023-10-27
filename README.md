@@ -66,15 +66,27 @@ ssh edwinlim@clnode168.clemson.cloudlab.us node22
 ssh edwinlim@clnode110.clemson.cloudlab.us node23
 ```
 
-Then, you can run scripts to zip the application, copy it to all the nodes, and run some setup scripts on the nodes to install dependencies. You can use a command like this, providing both the name of the application and the node ssh info from above (currently only the modified gRPC HotelReservation application is supported by the scripts).
+Then, you can run scripts to zip the application, copy it to all the nodes, and run some setup scripts on the nodes to install dependencies. You can use a command like this, providing both the name of the application and the node ssh info from above (currently only the modified gRPC HotelReservation application is supported by the scripts). Run all these commands from grpc-hotel-ipu/scripts.
 ```bash
 python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list c6420_24.txt
 ```
 
 ## Setting up a Docker Swarm
+Use this command to set up a docker swarm on the node that will be your manager node. You should do this on node0.
 ```bash
-cd scripts/
 python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
+```
+
+## Joining the other nodes to the Docker Swarm
+Then, join the other nodes to the Docker Swarm as worker nodes by running the following command from the manager node. You will need to provide the node ssh info file, as well as the address of the manager node (without the "<uid>@" portion of the ssh command).
+```bash
+python3 main.py --join-docker-swarm --node-ssh-list c6420_24.txt --manager-addr clnode109.clemson.cloudlab.us
+```
+
+## Labeling the nodes in the Docker Swarm
+Once the other nodes are joined to the swarm, assign them the node<x> labels from the ssh node info with the following command. You will need to provide the ssh info file to the script.
+```bash
+python3 main.py --label-docker-swarm --node-ssh-list c6420_24.txt
 ```
 
 ## Contributing
