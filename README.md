@@ -90,9 +90,17 @@ python3 main.py --label-docker-swarm --node-ssh-list c6420_24.txt
 ```
 
 ## Starting the application
-Once all nodes have joined the swarm and have been labeled, you can now start the application. You will need a docker-compose-swarm.yml file that contains information about each microservice and their node mappings. The example hotelreservation_grpc_c6420_24_docker-compose-swarm.yml maps each microservice onto its own node. In this example, node2-node23 host microservices. Node0 only runs the swarm manager, and node1 runs the workload generator. You can start the application with the following command, providing all the information. The --application-name argument is different from the --docker-application-name argument, but that's because the --aplication-name only holds random metadata needed for the Python scripting. The --docker-application-name argument is the name of the actual application within Docker.
+Once all nodes have joined the swarm and have been labeled, you can now start the application. You will need a docker-compose-swarm.yml file in grpc-hotel-ipu/configs that contains information about each microservice and their node mappings. The example hotelreservation_grpc_c6420_24_docker-compose-swarm.yml maps each microservice onto its own node. In this example, node2-node23 host microservices. Node0 only runs the swarm manager, and node1 runs the workload generator. You can start the application with the following command, providing all the information. The --application-name argument is different from the --docker-application-name argument, but that's because the --aplication-name only holds random metadata needed for the Python scripting. The --docker-application-name argument is the name of the actual application within Docker.
 ```bash
 python3 main.py --start-application --manager-addr clnode109.clemson.cloudlab.us --application-name hotelreservation_grpc --docker-application-name hotelReservation --swarm-yml-name hotelreservation_grpc_c6420_24_docker-compose-swarm.yml
+```
+Give the application a few minutes to start up, and you can periodically check the status with the following command. When the application is up and running, you should see a '1/1' for all the microservices under the 'Replicated' section.
+```bash
+sudo docker service ls
+```
+Once the application has fully started up, check if is function by issuing a request with the following command.
+```bash
+curl -X GET "http://10.10.1.1:5000/hotels?inDate=2015-04-13&outDate=2015-04-15&lat=64.83538&lon=-147.8233"
 ```
 
 ## Contributing
