@@ -37,30 +37,16 @@ You may need to log out of the node and log back in to see env changes take effe
 source ./setup.sh
 ```
 
-## Setting up a Docker Swarm
-```bash
-cd scripts/
-python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
-```
-
-## Setting up an application across CloudLab nodes 
+## Setting up an application across CloudLab nodes
+First, you will need to make an .txt file in <mark>grpc-hotel-ipu/node-ssh-lists</mark> such as <mark>c6420_24.txt</mark>
 ```bash
 python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list <provide .txt file from node-ssh-lists>
 ```
 
-## Usage
-
-```python
-import foobar
-
-# returns 'words'
-foobar.pluralize('word')
-
-# returns 'geese'
-foobar.pluralize('goose')
-
-# returns 'phenomenon'
-foobar.singularize('phenomena')
+## Setting up a Docker Swarm
+```bash
+cd scripts/
+python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
 ```
 
 ## Contributing
