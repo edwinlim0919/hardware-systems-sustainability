@@ -38,7 +38,7 @@ source ./setup.sh
 ```
 
 ## Setting up an application across CloudLab nodes
-First, you will need to make an .txt file in grpc-hotel-ipu/node-ssh-lists such as c6420_24.txt, which contains the ssh command for each node in your CloudLab experiment, as well as node label such as node<x>. You should just order these in increasing number for simplicity, and they will correspond to placement constraints in the docker-compose-swarm.yml file. Here is an example for a 24 node cluster:
+First, you will need to make an .txt file in grpc-hotel-ipu/node-ssh-lists such as c6420_24.txt, which contains the ssh command for each node in your CloudLab experiment, as well as node label such as node<x>. You should just order these in increasing number for simplicity, and they correspond to placement constraints in the docker-compose-swarm.yml files within grpc-hotel-ipu/configs. Here is an example for a 24 node cluster (you will need to use your own cloudlab uid instead of edwinlim):
 ```
 ssh edwinlim@clnode109.clemson.cloudlab.us node0
 ssh edwinlim@clnode123.clemson.cloudlab.us node1
@@ -65,8 +65,10 @@ ssh edwinlim@clnode140.clemson.cloudlab.us node21
 ssh edwinlim@clnode168.clemson.cloudlab.us node22
 ssh edwinlim@clnode110.clemson.cloudlab.us node23
 ```
+
+Then, you can run scripts to zip the application, copy it to all the nodes, and run some setup scripts on the nodes to install dependencies. You can use a command like this, providing both the name of the application and the node ssh info from above (currently only the modified gRPC HotelReservation application is supported by the scripts).
 ```bash
-python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list <provide .txt file from node-ssh-lists>
+python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list c6420_24.txt
 ```
 
 ## Setting up a Docker Swarm
