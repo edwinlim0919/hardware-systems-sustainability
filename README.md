@@ -103,6 +103,12 @@ Once the application has fully started up, check if is function by issuing a req
 curl -X GET "http://10.10.1.1:5000/hotels?inDate=2015-04-13&outDate=2015-04-15&lat=64.83538&lon=-147.8233"
 ```
 
+## Taking down the Docker Swarm
+Once you are done with using the application, you can take down the Docker Swarm with the following command.
+```bash
+python3 main.py --leave-docker-swarm --node-ssh-list c6420_24.txt --manager-addr clnode109.clemson.cloudlab.us
+```
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
