@@ -38,7 +38,7 @@ source ./setup.sh
 ```
 
 ## Setting up an application across CloudLab nodes
-First, you will need to make an .txt file in <mark>grpc-hotel-ipu/node-ssh-lists</mark> such as <mark>c6420_24.txt</mark>
+First, you will need to make an .txt file in <span style="background-color: #FFFF00">Marked text</span>  <mark>grpc-hotel-ipu/node-ssh-lists</mark> such as <mark>c6420_24.txt</mark>
 ```bash
 python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list <provide .txt file from node-ssh-lists>
 ```
