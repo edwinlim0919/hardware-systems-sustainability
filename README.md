@@ -89,6 +89,12 @@ Once the other nodes are joined to the swarm, assign them the node<x> labels fro
 python3 main.py --label-docker-swarm --node-ssh-list c6420_24.txt
 ```
 
+## Starting the application
+Once all nodes have joined the swarm and have been labeled, you can now start the application. You will need a docker-compose-swarm.yml file that contains information about each microservice and their node mappings. The example hotelreservation_grpc_c6420_24_docker-compose-swarm.yml maps each microservice onto its own node. In this example, node2-node23 host microservices. Node0 only runs the swarm manager, and node1 runs the workload generator. You can start the application with the following command, providing all the information. The --application-name argument is different from the --docker-application-name argument, but that's because the --aplication-name only holds random metadata needed for the Python scripting. The --docker-application-name argument is the name of the actual application within Docker.
+```bash
+python3 main.py --start-application --manager-addr clnode109.clemson.cloudlab.us --application-name hotelreservation_grpc --docker-application-name hotelReservation --swarm-yml-name hotelreservation_grpc_c6420_24_docker-compose-swarm.yml
+```
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
