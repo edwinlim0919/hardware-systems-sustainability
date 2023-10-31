@@ -284,6 +284,27 @@ def start_application(manager_addr, application_name, docker_application_name, s
     logger.info(application_name_upper + ' successfully deployed')
     logger.info('----------------')
 
+def run_workload_generator():
+    logger.info('----------------')
+    logger.info('Running workload generator on manager node')
+
+    wrk_dir = os.getcwd() + '/../DeathStarBench/wrk2'
+    os.chdir(wrk_dir)
+    subprocess.Popen(['make']).wait()
+    path_to_wrk_lua = '/src/wrk.lua'
+    # TODO: we might want to add command line arguments to automate the latency finding process
+    subprocess.Popen(['./wrk', '-D', 'exp', '-t50', '-c50', '-d1m', '-L', '-s', path_to_wrk_lua, 'http://10.10.1.1:5000, -R 6000']).wait()
+
+    # run `sudo docker ps | grep frontend` to get container id
+    # run `sudo docker top $container_id` to get pid
+
+def run_workload_generator_profiling(pid):
+    logger.info('----------------')
+    logger.info('Profiling and get perf results')
+
+    subprocess.Popen(['sudo', 'perf', 'record', '-F', '250', '-e', 'cpu-cycles:ppp,instructions,branches,branch-misses', '--call-graph', 'lbr', '-p', str(pid), 'sleep', '60']).wait()
+    subprocess.Popen(['bash', '~/scripts/perf.sh']).wait()
+    subprocess.Popen(['sudo', '/dev/shm/perf', 'report', '--call-graph=folded,0.00000001', '--no-children', '-i', 'perf.data']).wait()
 
 def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -354,6 +375,21 @@ def get_args():
                         dest='swarm_yml_name',
                         type=str,
                         help='provide name of docker-compose-swarm yml file within grpc-hotel-ipu/configs containing swarm node mappings')
+    # Running workload generator
+    parser.add_argument('--run-workload-generator',
+                        dest='run_workload_generator',
+                        action='store_true',
+                        help='specify arg to run the workload generator on the manager node')
+    # Profiling workload generator on manager node
+    parser.add_argument('--profiling',
+                        dest='profiling',
+                        action='store_true',
+                        help='specify arg to run the workload generator with profiling')
+    parser.add_argument('--pid',
+                        dest='pid',
+                        type=int,
+                        help='specify the pid of the workload generator process')
+    
 
     return parser.parse_args()
 
@@ -409,3 +445,8 @@ if __name__ == '__main__':
                           args.application_name,
                           args.docker_application_name,
                           args.swarm_yml_name)
+    
+    if args.profiling:
+        if args.pid is None:
+            raise ValueError('must provide pid of workload generator process for profiling')
+        utils.profile_workload_generator(args.manager_addr, args.pid)
