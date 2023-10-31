@@ -302,12 +302,24 @@ def run_workload_generator(wrkgen_addr, application_name):
     print(cp_cmd)
 
     logger.info('Modifying path to wrk2_points.txt in wrk.c')
-    sed_cmd = utils.sed_str.format('REPLACE_ME', uid, application_info[wrk_csrc_path])
+    sed_cmd = utils.sed_str.format('REPLACE_ME', uid, application_info['wrk_csrc_path'])
     #subprocess.Popen(ssh_cmd.split() + [sed_cmd]).wait()
     print(ssh_cmd)
     print(sed_cmd)
 
+    logger.info('Building the workload generator')
+    cd_cmd = utils.cd_str.format('~/wrk2')
+    #subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + ['make']).wait()
+    print(ssh_cmd)
+    print(cd_cmd + ' && ' + 'make')
 
+    logger.info('Copying workload lua to home directory')
+    scp_cmd = utils.scp_str.format(application_info['workload_lua_path'], uid, wrkgen_addr, '~/modified-mixed-workload.lua')
+    #subprocess.Popen(scp_cmd.split()).wait()
+    print(scp_cmd)
+
+    logger.info('Starting the workload generator')
+    wrk_cmd = utils.wrk_str.format()
 
     logger.info('Working generator is running')
     logger.info('----------------')
@@ -408,6 +420,22 @@ def get_args():
                         dest='wrkgen_addr',
                         type=str,
                         help='provide address of the node that will run the workload generator')
+    parser.add_argument('--numthreads',
+                        dest='numthreads',
+                        type=str,
+                        help='the total number of threads per URL for the workload generator')
+    parser.add_argument('--numconnections',
+                        dest='numconnections',
+                        type=str,
+                        help='the total number of http connections to keep open for the workload generator')
+    parser.add_argument('--duration',
+                        dest='duration',
+                        type=str,
+                        help='the duration to run the workload generator')
+    parser.add_argument('--rps',
+                        dest='rps',
+                        type=str,
+                        help='requests per second for the workload generator')
     # Profiling workload generator on manager node
     parser.add_argument('--profiling',
                         dest='profiling',
@@ -477,7 +505,8 @@ if __name__ == '__main__':
         if args.wrkgen_addr is None:
             raise ValueError('must provide ssh address of the workload generator node')
         if args.application_name is None:
-            raise ValueError('application name must be provided to run the workload generator') 
+            raise ValueError('application name must be provided to run the workload generator')
+        run_workload_generator(args.wrkgen_addr, args.application_name)
     #if args.profiling:
     #    if args.pid is None:
     #        raise ValueError('must provide pid of workload generator process for profiling')
