@@ -284,16 +284,23 @@ def start_application(manager_addr, application_name, docker_application_name, s
     logger.info(application_name_upper + ' successfully deployed')
     logger.info('----------------')
 
-def run_workload_generator():
+def run_workload_generator(wrkgen_addr):
     logger.info('----------------')
-    logger.info('Running workload generator on manager node')
+    logger.info('Running workload generator on designated workload generator node')
 
-    wrk_dir = os.getcwd() + '/../DeathStarBench/wrk2'
-    os.chdir(wrk_dir)
-    subprocess.Popen(['make']).wait()
-    path_to_wrk_lua = '/src/wrk.lua'
-    # TODO: we might want to add command line arguments to automate the latency finding process
-    subprocess.Popen(['./wrk', '-D', 'exp', '-t50', '-c50', '-d1m', '-L', '-s', path_to_wrk_lua, 'http://10.10.1.1:5000, -R 6000']).wait()
+    logger.info('Copying wrk2_points.txt to home directory')
+    uid = os.getlogin()
+    ssh_cmd = utils.ssh_str.format(uid, wrkgen_addr)
+
+    logger.info('Working generator is running')
+    logger.info('----------------')
+
+    #wrk_dir = os.getcwd() + '/../DeathStarBench/wrk2'
+    #os.chdir(wrk_dir)
+    #subprocess.Popen(['make']).wait()
+    #path_to_wrk_lua = '/src/wrk.lua'
+    ## TODO: we might want to add command line arguments to automate the latency finding process
+    #subprocess.Popen(['./wrk', '-D', 'exp', '-t50', '-c50', '-d1m', '-L', '-s', path_to_wrk_lua, 'http://10.10.1.1:5000, -R 6000']).wait()
 
     # run `sudo docker ps | grep frontend` to get container id
     # run `sudo docker top $container_id` to get pid
@@ -351,7 +358,7 @@ def get_args():
     parser.add_argument('--manager-addr',
                         dest='manager_addr',
                         type=str,
-                        help='provide name of the node that will manage node and run the workload generator')
+                        help='provide address of the node that will manage the Docker Swarm')
     # Leaving docker swarm
     parser.add_argument('--leave-docker-swarm',
                         dest='leave_docker_swarm',
@@ -379,7 +386,11 @@ def get_args():
     parser.add_argument('--run-workload-generator',
                         dest='run_workload_generator',
                         action='store_true',
-                        help='specify arg to run the workload generator on the manager node')
+                        help='specify arg to run the workload generator on a specified node')
+    parser.add_argument('--wrkgen-addr',
+                        dest='wrkgen_addr',
+                        type=str,
+                        help='provide address of the node that will run the workload generator')
     # Profiling workload generator on manager node
     parser.add_argument('--profiling',
                         dest='profiling',
@@ -389,7 +400,6 @@ def get_args():
                         dest='pid',
                         type=int,
                         help='specify the pid of the workload generator process')
-    
 
     return parser.parse_args()
 
@@ -445,8 +455,12 @@ if __name__ == '__main__':
                           args.application_name,
                           args.docker_application_name,
                           args.swarm_yml_name)
-    
-    if args.profiling:
-        if args.pid is None:
-            raise ValueError('must provide pid of workload generator process for profiling')
-        utils.profile_workload_generator(args.manager_addr, args.pid)
+
+    if args.run_workload_generator:
+        if args.wrkgen_addr is None:
+            raise ValueError('must provide ssh address of the workload generator node')
+ 
+    #if args.profiling:
+    #    if args.pid is None:
+    #        raise ValueError('must provide pid of workload generator process for profiling')
+    #    utils.profile_workload_generator(args.manager_addr, args.pid)
