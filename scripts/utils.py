@@ -11,6 +11,7 @@ ssh_str = 'ssh {0}@{1}'
 unzip_str = 'yes | unzip {0}'
 cp_str = 'cp -R {0} {1}'
 cd_str = 'cd {0}'
+sed_str = 'sed s/{0}/{1}/g {2}'
 label_add_str = 'sudo docker node update --label-add {0} {1}'
 application_deploy_str = 'sudo docker stack deploy --compose-file={0} {1}'
 

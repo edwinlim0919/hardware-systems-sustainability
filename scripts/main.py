@@ -284,6 +284,7 @@ def start_application(manager_addr, application_name, docker_application_name, s
     logger.info(application_name_upper + ' successfully deployed')
     logger.info('----------------')
 
+
 def run_workload_generator(wrkgen_addr, application_name):
     logger.info('----------------')
     logger.info('Running workload generator on designated workload generator node')
@@ -296,6 +297,17 @@ def run_workload_generator(wrkgen_addr, application_name):
         ValueError('specified application does not exist in metadata.appication_info')
     application_info = metadata.application_info[application_name_upper]
     cp_cmd = utils.cp_str.format(application_info['wrk2_points_path'], '~/wrk2_points.txt')
+    #subprocess.Popen(ssh_cmd.split() + [cp_cmd]).wait()
+    print(ssh_cmd)
+    print(cp_cmd)
+
+    logger.info('Modifying path to wrk2_points.txt in wrk.c')
+    sed_cmd = utils.sed_str.format('REPLACE_ME', uid, application_info[wrk_csrc_path])
+    #subprocess.Popen(ssh_cmd.split() + [sed_cmd]).wait()
+    print(ssh_cmd)
+    print(sed_cmd)
+
+
 
     logger.info('Working generator is running')
     logger.info('----------------')
