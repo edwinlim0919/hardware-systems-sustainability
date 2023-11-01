@@ -28,4 +28,4 @@ python3 main.py --label-docker-swarm --node-ssh-list c6320_24.txt
 python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list c6320_24.txt --replace-zip
 python3 main.py --start-application --manager-addr clnode109.clemson.cloudlab.us --application-name hotelreservation_grpc --docker-application-name hotelReservation --swarm-yml-name hotelreservation_grpc_c6320_24_docker-compose-swarm.yml
 
-python3 main.py --run-workload-generator --wrkgen-addr clnode106.clemson.cloudlab.us --application-name hotelreservation_grpc
+python3 main.py --run-workload-generator --wrkgen-addr clnode106.clemson.cloudlab.us --application-name hotelreservation_grpc --numthreads 50 --numconnections 50 --duration 1m --rps 2000

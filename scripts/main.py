@@ -285,7 +285,7 @@ def start_application(manager_addr, application_name, docker_application_name, s
     logger.info('----------------')
 
 
-def run_workload_generator(wrkgen_addr, application_name):
+def run_workload_generator(wrkgen_addr, application_name, numthreads, numconnections, duration, rps):
     logger.info('----------------')
     logger.info('Running workload generator on designated workload generator node')
 
@@ -319,7 +319,10 @@ def run_workload_generator(wrkgen_addr, application_name):
     print(scp_cmd)
 
     logger.info('Starting the workload generator')
-    wrk_cmd = utils.wrk_str.format()
+    wrk_cmd = utils.wrk_str.format(numthreads, numconnections, duration, rps)
+    #subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [wrk_cmd]).wait()
+    print(ssh_cmd)
+    print(cd_cmd + ' && ' + wrk_cmd)
 
     logger.info('Working generator is running')
     logger.info('----------------')
@@ -506,7 +509,20 @@ if __name__ == '__main__':
             raise ValueError('must provide ssh address of the workload generator node')
         if args.application_name is None:
             raise ValueError('application name must be provided to run the workload generator')
-        run_workload_generator(args.wrkgen_addr, args.application_name)
+        if args.numthreads is None:
+            raise ValueError('numthreads parameter must be provided for the workload generator')
+        if args.numconnections is None:
+            raise ValueError('numconnections parameter must be provided for the workload generator')
+        if args.duration is None:
+            raise ValueError('duration parameter must be provided for the workload generator')
+        if args.rps is None:
+            raise ValueError('rps parameter must be provided for the workload generator')
+        run_workload_generator(args.wrkgen_addr,
+                               args.application_name,
+                               args.numthreads,
+                               args.numconnections,
+                               args.duration,
+                               args.rps)
     #if args.profiling:
     #    if args.pid is None:
     #        raise ValueError('must provide pid of workload generator process for profiling')
