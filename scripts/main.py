@@ -285,31 +285,32 @@ def start_application(manager_addr, application_name, docker_application_name, s
     logger.info('----------------')
 
 
-def run_workload_generator(wrkgen_addr, application_name, numthreads, numconnections, duration, rps):
+def run_workload_generator(wrkgen_addr, application_name, numthreads, numconnections, duration, rps, compile_wrk):
     logger.info('----------------')
     logger.info('Running workload generator on designated workload generator node')
-
-    logger.info('Copying wrk2_points.txt to home directory')
     uid = os.getlogin()
     ssh_cmd = utils.ssh_str.format(uid, wrkgen_addr)
     application_name_upper = application_name.upper()
-    if application_name_upper not in metadata.application_info:
-        ValueError('specified application does not exist in metadata.appication_info')
-    application_info = metadata.application_info[application_name_upper]
-    cp_cmd = utils.cp_str.format(application_info['wrk2_points_path'], '~/wrk2_points.txt')
-    subprocess.Popen(ssh_cmd.split() + [cp_cmd]).wait()
-
-    logger.info('Modifying path to wrk2_points.txt in wrk.c')
-    sed_cmd = utils.sed_str.format('REPLACE_ME', uid, application_info['wrk_csrc_path'])
-    subprocess.Popen(ssh_cmd.split() + [sed_cmd]).wait()
-
-    logger.info('Building the workload generator')
     cd_cmd = utils.cd_str.format('~/wrk2')
-    subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + ['make']).wait()
 
-    logger.info('Copying workload lua to home directory')
-    scp_cmd = utils.scp_str.format(application_info['workload_lua_path'], uid, wrkgen_addr, '~/modified-mixed-workload.lua')
-    subprocess.Popen(scp_cmd.split()).wait()
+    if compile_wrk:
+        logger.info('Copying wrk2_points.txt to home directory')
+        if application_name_upper not in metadata.application_info:
+            ValueError('specified application does not exist in metadata.appication_info')
+        application_info = metadata.application_info[application_name_upper]
+        cp_cmd = utils.cp_str.format(application_info['wrk2_points_path'], '~/wrk2_points.txt')
+        subprocess.Popen(ssh_cmd.split() + [cp_cmd]).wait()
+
+        logger.info('Modifying path to wrk2_points.txt in wrk.c')
+        sed_cmd = utils.sed_str.format('REPLACE_ME', uid, application_info['wrk_csrc_path'])
+        subprocess.Popen(ssh_cmd.split() + [sed_cmd]).wait()
+
+        logger.info('Building the workload generator')
+        subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + ['make']).wait()
+
+        logger.info('Copying workload lua to home directory')
+        scp_cmd = utils.scp_str.format(application_info['workload_lua_path'], uid, wrkgen_addr, '~/modified-mixed-workload.lua')
+        subprocess.Popen(scp_cmd.split()).wait()
 
     logger.info('Starting the workload generator')
     wrkgen_res_file = '/users/' + uid + \
@@ -322,12 +323,57 @@ def run_workload_generator(wrkgen_addr, application_name, numthreads, numconnect
     subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [wrk_cmd]).wait()
 
     logger.info('Copying results from workload generator node')
+    # deleting previous results file w/ same name if it exists
+    rm_cmd = utils.rm_f_str.format(wrkgen_res_file)
+    if os.path.isfile(wrkgen_res_file):
+        subprocess.Popen(rm_cmd.split()).wait()
     scp_cmd = utils.scp_reverse_str.format(uid, wrkgen_addr, wrkgen_res_file, wrkgen_res_file)
     subprocess.Popen(scp_cmd.split()).wait()
-    print(scp_cmd.split())
-    print(scp_cmd)
+
+    logger.info('wrkgen_res_file: ' + wrkgen_res_file)
+    res_file = open(wrkgen_res_file, 'r')
+    res_file_lines = res_file.readlines()
+    avg_latencies = []
+    for i in range(len(res_file_lines)):
+        line = res_file_lines[i]
+        if 'Test Results' in line:
+            latency_results = res_file_lines[i+2]
+            avg_latency = latency_results.split()[1]
+            avg_latencies.append(avg_latency)
+            logger.info('avg_latency: ' + avg_latency)
+    res_file.close()
+
+    logger.info('Deleting results files to save space')
+    subprocess.Popen(ssh_cmd.split() + [rm_cmd]).wait()
+    subprocess.Popen(rm_cmd.split()).wait()
 
     logger.info('Working generator results collected and parsed')
+    logger.info('----------------')
+    return avg_latencies
+
+
+def run_latency_sweep(wrkgen_addr, application_name, numthreads, numconnections, duration, start_rps, max_rps, rps_scaling):
+    logger.info('----------------')
+    logger.info('Performing latency sweep in 1 minute intervals')
+
+    compile_wrk = True
+    rps_to_avg_latency = {}
+    curr_rps = start_rps
+    while curr_rps < max_rps:
+        avg_latencies = run_workload_generator(wrkgen_addr, application_name, numthreads, numconnections, duration, curr_rps, compile_wrk)
+        avg_latencies_sum = 0
+        for lat_str in avg_latencies:
+            avg_latencies_sum += float(lat_str[:-2])
+        avg_latency = avg_latencies_sum / len(avg_latencies)
+        rps_to_avg_latency[curr_rps] = avg_latency
+
+        curr_rps = curr_rps * rps_scaling
+        compile_wrk = False
+
+    logger.info('Listing latency sweep results')
+    for key, val in rps_to_avg_latency.items():
+        logger.info('RPS: ' + str(key) + ', LAT: ' + str(val))
+    logger.info('Latency sweep complete')
     logger.info('----------------')
 
 
@@ -433,6 +479,15 @@ def get_args():
                         dest='rps',
                         type=str,
                         help='requests per second for the workload generator')
+    parser.add_argument('--compile-wrk',
+                        dest='compile_wrk',
+                        action='store_true',
+                        help='specify arg to compile wrk2 if it has not already been compiled')
+    # Running latency sweep (runs workload generator)
+    parser.add_argument('--run-latency-sweep',
+                        dest='run_latency_sweep',
+                        action='store_true',
+                        help='specify arg to run a latency sweep with given parameters')
     # Profiling workload generator on manager node
     parser.add_argument('--profiling',
                         dest='profiling',
@@ -511,12 +566,35 @@ if __name__ == '__main__':
             raise ValueError('duration parameter must be provided for the workload generator')
         if args.rps is None:
             raise ValueError('rps parameter must be provided for the workload generator')
+        if args.compile_wrk is None:
+            raise ValueError('must specify whether to compile wrk2 or not')
         run_workload_generator(args.wrkgen_addr,
                                args.application_name,
                                args.numthreads,
                                args.numconnections,
                                args.duration,
-                               args.rps)
+                               args.rps,
+                               args.compile_wrk)
+
+    if args.run_latency_sweep:
+        if args.wrkgen_addr is None:
+            raise ValueError('must provide ssh address of the workload generator node')
+        if args.application_name is None:
+            raise ValueError('application name must be provided to run the workload generator')
+        if args.numthreads is None:
+            raise ValueError('numthreads parameter must be provided for the workload generator')
+        if args.numconnections is None:
+            raise ValueError('numconnections parameter must be provided for the workload generator')
+        if args.duration is None:
+            raise ValueError('duration parameter must be provided for the workload generator')
+        run_latency_sweep(args.wrkgen_addr,
+                          args.application_name,
+                          args.numthreads,
+                          args.numconnections,
+                          args.duration,
+                          start_rps,
+                          max_rps,
+                          rps_scaling)
     #if args.profiling:
     #    if args.pid is None:
     #        raise ValueError('must provide pid of workload generator process for profiling')

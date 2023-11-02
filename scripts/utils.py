@@ -5,6 +5,7 @@ import subprocess
 import os
 
 
+rm_f_str = 'rm -f {0}'
 scp_str = 'scp {0} {1}@{2}:{3}'
 scp_r_str = 'scp -r {0} {1}@{2}:{3}'
 scp_reverse_str = 'scp {0}@{1}:{2} {3}'
