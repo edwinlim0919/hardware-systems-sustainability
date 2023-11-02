@@ -33,3 +33,4 @@ python3 main.py --run-workload-generator --wrkgen-addr clnode106.clemson.cloudla
 python3 main.py --run-workload-generator --wrkgen-addr clnode106.clemson.cloudlab.us --application-name hotelreservation_grpc --numthreads 50 --numconnections 50 --duration 20s --rps 2000 false
 
 python3 main.py --run-latency-sweep --wrkgen-addr clnode106.clemson.cloudlab.us --application-name hotelreservation_grpc --numthreads 50 --numconnections 50 --duration 20s --start-rps 100 --max-rps 200 --rps-scaling 1.5
+python3 main.py --run-latency-sweep --wrkgen-addr clnode106.clemson.cloudlab.us --application-name hotelreservation_grpc --numthreads 50 --numconnections 50 --duration 1m --start-rps 100 --max-rps 3000 --rps-scaling 1.1
