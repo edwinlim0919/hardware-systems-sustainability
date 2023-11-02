@@ -298,44 +298,38 @@ def run_workload_generator(wrkgen_addr, application_name, numthreads, numconnect
     application_info = metadata.application_info[application_name_upper]
     cp_cmd = utils.cp_str.format(application_info['wrk2_points_path'], '~/wrk2_points.txt')
     subprocess.Popen(ssh_cmd.split() + [cp_cmd]).wait()
-    #print(ssh_cmd)
-    #print(cp_cmd)
 
     logger.info('Modifying path to wrk2_points.txt in wrk.c')
     sed_cmd = utils.sed_str.format('REPLACE_ME', uid, application_info['wrk_csrc_path'])
     subprocess.Popen(ssh_cmd.split() + [sed_cmd]).wait()
-    #print(ssh_cmd)
-    #print(sed_cmd)
 
     logger.info('Building the workload generator')
     cd_cmd = utils.cd_str.format('~/wrk2')
     subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + ['make']).wait()
-    #print(ssh_cmd)
-    #print(cd_cmd + ' && ' + 'make')
 
     logger.info('Copying workload lua to home directory')
     scp_cmd = utils.scp_str.format(application_info['workload_lua_path'], uid, wrkgen_addr, '~/modified-mixed-workload.lua')
     subprocess.Popen(scp_cmd.split()).wait()
-    #print(scp_cmd)
 
     logger.info('Starting the workload generator')
-    wrk_cmd = utils.wrk_str.format(numthreads, numconnections, duration, rps)
+    wrkgen_res_file = '/users/' + uid + \
+                      '/wrkgen_' + application_name_upper + \
+                      '_' + numthreads + \
+                      '_' + numconnections + \
+                      '_' + duration + \
+                      '_' + rps
+    wrk_cmd = utils.wrk_str.format(numthreads, numconnections, duration, rps, wrkgen_res_file)
     subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [wrk_cmd]).wait()
-    #print(ssh_cmd)
-    #print(cd_cmd + ' && ' + wrk_cmd)
 
-    logger.info('Working generator is running')
+    logger.info('Copying results from workload generator node')
+    scp_cmd = utils.scp_reverse_str.format(uid, wrkgen_addr, wrkgen_res_file, wrkgen_res_file)
+    subprocess.Popen(scp_cmd.split()).wait()
+    print(scp_cmd.split())
+    print(scp_cmd)
+
+    logger.info('Working generator results collected and parsed')
     logger.info('----------------')
 
-    #wrk_dir = os.getcwd() + '/../DeathStarBench/wrk2'
-    #os.chdir(wrk_dir)
-    #subprocess.Popen(['make']).wait()
-    #path_to_wrk_lua = '/src/wrk.lua'
-    ## TODO: we might want to add command line arguments to automate the latency finding process
-    #subprocess.Popen(['./wrk', '-D', 'exp', '-t50', '-c50', '-d1m', '-L', '-s', path_to_wrk_lua, 'http://10.10.1.1:5000, -R 6000']).wait()
-
-    # run `sudo docker ps | grep frontend` to get container id
-    # run `sudo docker top $container_id` to get pid
 
 def run_workload_generator_profiling(pid):
     logger.info('----------------')

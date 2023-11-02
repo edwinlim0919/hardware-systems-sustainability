@@ -7,12 +7,13 @@ import os
 
 scp_str = 'scp {0} {1}@{2}:{3}'
 scp_r_str = 'scp -r {0} {1}@{2}:{3}'
+scp_reverse_str = 'scp {0}@{1}:{2} {3}'
 ssh_str = 'ssh {0}@{1}'
 unzip_str = 'yes | unzip {0}'
 cp_str = 'cp -R {0} {1}'
 cd_str = 'cd {0}'
 sed_str = 'sed -i s/{0}/{1}/g {2}'
-wrk_str = './wrk -D exp -t{0} -c{1} -d{2} -L -s ~/modified-mixed-workload.lua http://10.10.1.1:5000 -R{3}'
+wrk_str = './wrk -D exp -t{0} -c{1} -d{2} -L -s ~/modified-mixed-workload.lua http://10.10.1.1:5000 -R{3} >> {4}'
 label_add_str = 'sudo docker node update --label-add {0} {1}'
 application_deploy_str = 'sudo docker stack deploy --compose-file={0} {1}'
 
