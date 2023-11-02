@@ -360,7 +360,7 @@ def run_latency_sweep(wrkgen_addr, application_name, numthreads, numconnections,
     rps_to_avg_latency = {}
     curr_rps = start_rps
     while curr_rps < max_rps:
-        avg_latencies = run_workload_generator(wrkgen_addr, application_name, numthreads, numconnections, duration, curr_rps, compile_wrk)
+        avg_latencies = run_workload_generator(wrkgen_addr, application_name, numthreads, numconnections, duration, str(int(curr_rps)), compile_wrk)
         avg_latencies_sum = 0
         for lat_str in avg_latencies:
             avg_latencies_sum += float(lat_str[:-2])
@@ -488,6 +488,18 @@ def get_args():
                         dest='run_latency_sweep',
                         action='store_true',
                         help='specify arg to run a latency sweep with given parameters')
+    parser.add_argument('--start-rps',
+                        dest='start_rps',
+                        type=int,
+                        help='rps at which to start latency sweep')
+    parser.add_argument('--max-rps',
+                        dest='max_rps',
+                        type=int,
+                        help='rps at which to end latency sweep')
+    parser.add_argument('--rps-scaling',
+                        dest='rps_scaling',
+                        type=float,
+                        help='scale current rps by this factor for each sweep iteration')
     # Profiling workload generator on manager node
     parser.add_argument('--profiling',
                         dest='profiling',
@@ -592,9 +604,9 @@ if __name__ == '__main__':
                           args.numthreads,
                           args.numconnections,
                           args.duration,
-                          start_rps,
-                          max_rps,
-                          rps_scaling)
+                          args.start_rps,
+                          args.max_rps,
+                          args.rps_scaling)
     #if args.profiling:
     #    if args.pid is None:
     #        raise ValueError('must provide pid of workload generator process for profiling')
