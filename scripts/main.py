@@ -365,14 +365,29 @@ def run_latency_sweep(wrkgen_addr, application_name, numthreads, numconnections,
         for lat_str in avg_latencies:
             avg_latencies_sum += float(lat_str[:-2])
         avg_latency = avg_latencies_sum / len(avg_latencies)
-        rps_to_avg_latency[curr_rps] = avg_latency
+        rps_to_avg_latency[int(curr_rps)] = avg_latency
 
         curr_rps = curr_rps * rps_scaling
         compile_wrk = False
 
     logger.info('Listing latency sweep results')
+    lines = []
     for key, val in rps_to_avg_latency.items():
+        lines.append(str(key) + ' ' + str(val) + '\n')
         logger.info('RPS: ' + str(key) + ', LAT: ' + str(val))
+
+    res_file = application_name + '-' + \
+               numthreads + '-' + \
+               numconnections + '-' + \
+               duration + '-' + \
+               str(start_rps) + '-' + \
+               str(max_rps) + '-' + \
+               str(rps_scaling)
+    logger.info('Writing latency sweep results to: grpc-hotel-ipu/results/')
+    f = open("../results/" + res_file, "w")
+    f.writelines(lines)
+    f.close()
+
     logger.info('Latency sweep complete')
     logger.info('----------------')
 
