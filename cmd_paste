@@ -36,3 +36,14 @@ python3 main.py --run-latency-sweep --wrkgen-addr clnode106.clemson.cloudlab.us 
 python3 main.py --run-latency-sweep --wrkgen-addr clnode106.clemson.cloudlab.us --application-name hotelreservation_grpc --numthreads 50 --numconnections 50 --duration 1m --start-rps 100 --max-rps 3000 --rps-scaling 1.1
 python3 main.py --run-latency-sweep --wrkgen-addr clnode106.clemson.cloudlab.us --application-name hotelreservation_grpc --numthreads 50 --numconnections 50 --duration 2m --start-rps 100 --max-rps 3000 --rps-scaling 1.1
 
+
+
+
+
+
+python3 main.py --setup-docker-swarm --published 7696 --target 5000 --registry 2
+python3 main.py --join-docker-swarm --node-ssh-list c6420_24.txt --manager-addr clnode207.clemson.cloudlab.us
+python3 main.py --leave-docker-swarm --node-ssh-list c6420_24.txt --manager-addr clnode207.clemson.cloudlab.us
+python3 main.py --label-docker-swarm --node-ssh-list c6420_24.txt
+python3 main.py --setup-application --application-name hotelreservation_grpc --node-ssh-list c6420_24.txt --replace-zip
+python3 main.py --start-application --manager-addr clnode207.clemson.cloudlab.us --application-name hotelreservation_grpc --docker-application-name hotelReservation --swarm-yml-name hotelreservation_grpc_c6420_24_docker-compose-swarm.yml
