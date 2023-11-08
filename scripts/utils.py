@@ -17,6 +17,7 @@ sed_str = 'sed -i s/{0}/{1}/g {2}'
 wrk_str = './wrk -D exp -t{0} -c{1} -d{2} -L -s ~/modified-mixed-workload.lua http://10.10.1.1:5000 -R{3} >> {4}'
 label_add_str = 'sudo docker node update --label-add {0} {1}'
 application_deploy_str = 'sudo docker stack deploy --compose-file={0} {1}'
+ps_grep_str = 'sudo docker ps | grep {0}'
 
 
 # Validates that ip_address string is in a valid format
