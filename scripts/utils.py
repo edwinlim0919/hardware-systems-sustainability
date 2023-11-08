@@ -18,6 +18,8 @@ wrk_str = './wrk -D exp -t{0} -c{1} -d{2} -L -s ~/modified-mixed-workload.lua ht
 label_add_str = 'sudo docker node update --label-add {0} {1}'
 application_deploy_str = 'sudo docker stack deploy --compose-file={0} {1}'
 ps_grep_str = 'sudo docker ps | grep {0}'
+top_str = 'sudo docker top {0}'
+perf_str = 'sudo perf record -F 250 -e {0} --call-graph lbr -p {1} sleep 120'
 
 
 # Validates that ip_address string is in a valid format
