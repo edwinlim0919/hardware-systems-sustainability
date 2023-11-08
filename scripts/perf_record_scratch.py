@@ -35,7 +35,10 @@ docker_id = str(out.split()[0])[2:-1]
 top_cmd = utils.top_str.format(docker_id)
 out = subprocess.check_output(ssh_cmd.split() + [top_cmd])
 pid = str(out).split()[8]
-#print(out)
-#print(pid)
 
+perf_items = ['cpu-cycles:ppp,instructions,branches,branch-misses']
 
+# Run perf
+for perf_item in perf_items:
+    perf_cmd = utils.perf_str.format(perf_item, pid)
+    subprocess.Popen(ssh_cmd.split() + [perf_cmd]).wait()
