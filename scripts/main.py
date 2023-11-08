@@ -345,7 +345,10 @@ def run_workload_generator(wrkgen_addr, application_name, numthreads, numconnect
 
     logger.info('Deleting results files to save space')
     subprocess.Popen(ssh_cmd.split() + [rm_cmd]).wait()
-    subprocess.Popen(rm_cmd.split()).wait()
+    #subprocess.Popen(rm_cmd.split()).wait()
+
+    print('ALL AVG_LATENCIES')
+    print(avg_latencies)
 
     logger.info('Working generator results collected and parsed')
     logger.info('----------------')
@@ -363,7 +366,12 @@ def run_latency_sweep(wrkgen_addr, application_name, numthreads, numconnections,
         avg_latencies = run_workload_generator(wrkgen_addr, application_name, numthreads, numconnections, duration, str(int(curr_rps)), compile_wrk)
         avg_latencies_sum = 0
         for lat_str in avg_latencies:
-            avg_latencies_sum += float(lat_str[:-2])
+            if lat_str[-2:] == 'ms':
+                avg_latencies_sum += float(lat_str[:-2])
+            elif lat_str[-1:] == 's':
+                avg_latencies_sum += float(lat_str[:-1] * 1000)
+            elif lat_str[-1:] == 'm':
+                avg_latencies_sum += float(lat_str[:-1] * 1000 * 60)
         avg_latency = avg_latencies_sum / len(avg_latencies)
         rps_to_avg_latency[int(curr_rps)] = avg_latency
 
