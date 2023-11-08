@@ -345,7 +345,7 @@ def run_workload_generator(wrkgen_addr, application_name, numthreads, numconnect
 
     logger.info('Deleting results files to save space')
     subprocess.Popen(ssh_cmd.split() + [rm_cmd]).wait()
-    #subprocess.Popen(rm_cmd.split()).wait()
+    subprocess.Popen(rm_cmd.split()).wait()
 
     print('ALL AVG_LATENCIES')
     print(avg_latencies)
