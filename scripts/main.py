@@ -30,6 +30,9 @@ def setup_application(application_name, replace_zip, node_ssh_list):
             full_line += (word + ' ')
         node_ssh_lines.append(full_line.strip())
 
+    # ssh'ing into every node to avoid StrictHostKeyChecking
+    # disabling this does not work anymore for some reason
+
     # Zip grpc-hotel-ipu/datacenter-soc into grpc-hotel-ipu/zipped-applications
     application_dir_path = application_info['manager_dir_path']
     application_zip_path = '../zipped-applications/' + application_name + '.zip'

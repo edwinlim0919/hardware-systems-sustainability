@@ -6,9 +6,9 @@ import os
 
 
 rm_f_str = 'rm -f {0}'
-scp_str = 'sudo scp {0} {1}@{2}:{3}'
-scp_r_str = 'scp -r {0} {1}@{2}:{3}'
-scp_reverse_str = 'scp {0}@{1}:{2} {3}'
+scp_str = 'sudo scp -o StrictHostKeyChecking=no {0} {1}@{2}:{3}'
+scp_r_str = 'sudo scp -o StrictHostKeyChecking=no -r {0} {1}@{2}:{3}'
+scp_reverse_str = 'sudo scp -o StrictHostKeyChecking=no {0}@{1}:{2} {3}'
 ssh_str = 'ssh {0}@{1}'
 unzip_str = 'yes | unzip {0}'
 cp_str = 'sudo cp -R {0} {1}'
