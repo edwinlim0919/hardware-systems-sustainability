@@ -6,6 +6,7 @@ import os
 
 
 rm_f_str = 'sudo rm -f {0}'
+rm_rf_str = 'sudo rm -rf {0}'
 scp_str = 'sudo scp -o StrictHostKeyChecking=no {0} {1}@{2}:{3}'
 scp_r_str = 'sudo scp -o StrictHostKeyChecking=no -r {0} {1}@{2}:{3}'
 scp_reverse_str = 'sudo scp -o StrictHostKeyChecking=no {0}@{1}:{2} {3}'
