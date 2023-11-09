@@ -32,6 +32,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
 
     # ssh'ing into every node to avoid StrictHostKeyChecking
     # disabling this does not work anymore for some reason
+    home_dir_all = '/users/' + os.getlogin() + '/*'
 
     # Zip grpc-hotel-ipu/datacenter-soc into grpc-hotel-ipu/zipped-applications
     application_dir_path = application_info['manager_dir_path']
@@ -53,7 +54,17 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     uid = os.getlogin()
     zip_file_name = utils.extract_path_end(application_zip_path)
     procs_list = []
+
+    for ssh_line in node_ssh_lines:
+        addr_only = utils.extract_ssh_addr(ssh_line)
+        ssh_cmd = utils.ssh_str.format(uid, addr_only)
+        rm_cmd = utils.rm_rf_str.format(home_dir_all)
+        procs_list.append(subprocess.Popen(ssh_cmd.split() + [rm_cmd]))
+    for proc in procs_list:
+        proc.wait()
+
     logger.info('copying, unzipping, and organizing ' + zip_file_name + ' for specified nodes')
+    procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
         scp_cmd = utils.scp_str.format(application_zip_path,
