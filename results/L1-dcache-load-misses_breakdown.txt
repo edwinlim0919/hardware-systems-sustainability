@@ -1,0 +1,32 @@
+
+
+Total Overhead: 100.00027065000083 
+
+Memory 4.3801%
+Kernel 21.7376%
+Hashing 1.1177%
+Synchronization 3.0911%
+Compression 0.0249%
+C Libraries 6.3221%
+Golang Kernel/Synchronization 10.0460%
+Golang Memory Management 3.5538%
+Golang Garbage Collection 24.5382%
+Application Logic 1.9886%
+Miscellaneous 2.5325%
+Total Unallocated Overhead: 20.66770279000001 Allocatable Overhead: 20.034453220000042
+Copy 0.1352%
+Free 0.0643%
+Move 0.6027%
+Set 0.3745%
+Alloc 0.6687%
+Compare 0.1167%
+Misc 0.0000%
+
+0.0000
+0.0000
+0.0000
+0.0000
+0.0000
+0.0000
+0.0000
+Unallocated higher level ; 100.000
