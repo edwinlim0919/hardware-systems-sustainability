@@ -5,16 +5,16 @@ import subprocess
 import os
 
 
-rm_f_str = 'rm -f {0}'
+rm_f_str = 'sudo rm -f {0}'
 scp_str = 'sudo scp -o StrictHostKeyChecking=no {0} {1}@{2}:{3}'
 scp_r_str = 'sudo scp -o StrictHostKeyChecking=no -r {0} {1}@{2}:{3}'
 scp_reverse_str = 'sudo scp -o StrictHostKeyChecking=no {0}@{1}:{2} {3}'
-ssh_str = 'ssh {0}@{1}'
-unzip_str = 'yes | unzip {0}'
+ssh_str = 'sudo ssh {0}@{1}'
+unzip_str = 'sudo yes | unzip {0}'
 cp_str = 'sudo cp -R {0} {1}'
 cd_str = 'cd {0}'
 sed_str = 'sudo sed -i s/{0}/{1}/g {2}'
-wrk_str = './wrk -D exp -t{0} -c{1} -d{2} -L -s ~/modified-mixed-workload.lua http://10.10.1.1:5000 -R{3} >> {4}'
+wrk_str = 'sudo ./wrk -D exp -t{0} -c{1} -d{2} -L -s ~/modified-mixed-workload.lua http://10.10.1.1:5000 -R{3} >> {4}'
 label_add_str = 'sudo docker node update --label-add {0} {1}'
 application_deploy_str = 'sudo docker stack deploy --compose-file={0} {1}'
 ps_grep_str = 'sudo docker ps | grep {0}'

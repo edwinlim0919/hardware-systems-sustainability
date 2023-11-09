@@ -15,13 +15,17 @@ uid = os.getlogin()
 
 if rebuild_perf == 'true':
     # Installing various perf dependencies
-    install_flex_cmd = 'sudo apt-get update && sudo apt-get install flex'
+    update_flex_cmd = 'sudo apt-get update'
+    subprocess.Popen(update_flex_cmd.split()).wait()
+    install_flex_cmd = 'sudo apt-get install flex'
     subprocess.Popen(install_flex_cmd.split()).wait()
-    install_bison_cmd = 'sudo apt-get update && sudo apt-get install bison'
+    update_bison_cmd = 'sudo apt-get update'
+    subprocess.Popen(update_bison_cmd.split()).wait()
+    install_bison_cmd = 'sudo apt-get install bison'
     subprocess.Popen(install_bison_cmd.split()).wait()
- 
+
     # Rebuild perf
-    rebuild_perf_cmd = 'bash ~/scripts/rebuild-perf.sh'
+    rebuild_perf_cmd = 'bash /users/' + uid + '/scripts/rebuild-perf.sh'
     subprocess.Popen(rebuild_perf_cmd.split()).wait()
 
 perfdata_path = '/users/' + uid + '/perfdata'

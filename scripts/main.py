@@ -313,7 +313,7 @@ def run_workload_generator(wrkgen_addr, application_name, numthreads, numconnect
         subprocess.Popen(ssh_cmd.split() + [sed_cmd]).wait()
 
         logger.info('Building the workload generator')
-        subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + ['make']).wait()
+        subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + ['sudo make']).wait()
 
         logger.info('Copying workload lua to home directory')
         scp_cmd = utils.scp_str.format(application_info['workload_lua_path'], uid, wrkgen_addr, '~/modified-mixed-workload.lua')
