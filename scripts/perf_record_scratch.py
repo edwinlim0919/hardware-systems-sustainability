@@ -34,10 +34,10 @@ if not os.path.exists(perfdata_path):
     subprocess.Popen(mkdir_cmd.split()).wait()
 
 # Get process ID running inside Docker container
-ps_grep_cmd = utils.ps_grep_str.format(microservice_name)
+ps_grep_cmd = 'sudo ' + utils.ps_grep_str.format(microservice_name)
 out = subprocess.check_output(ps_grep_cmd, shell=True)
 docker_id = str(out.split()[0])[2:-1]
-top_cmd = utils.top_str.format(docker_id)
+top_cmd = 'sudo ' + utils.top_str.format(docker_id)
 out = subprocess.check_output(top_cmd.split())
 pid = str(out).split()[8]
 
@@ -78,8 +78,8 @@ for perf_item in perf_items:
     perf_item_split = perf_item.split(',')
     perfdata_file = perf_item_split[2] + '_' + perf_item_split[3] + '_perf.data'
     perfdata_filepath = '/users/' + uid + '/perfdata/' + perfdata_file
-    autoperf_cmd = 'bash /users/' + uid + '/scripts/autoperf.sh ' + perfdata_filepath
-    subprocess.Popen(autoperf_cmd.split()).wait()
+    #autoperf_cmd = 'bash /users/' + uid + '/scripts/autoperf.sh ' + perfdata_filepath
+    #subprocess.Popen(autoperf_cmd.split()).wait()
 
     cp_cmd = utils.cp_str.format(scripts_path + 'perf.hist.0', perfdata_path + perf_item_split[2] + '_' + perf_item_split[3] + '_perf.hist.0')
     subprocess.Popen(cp_cmd.split()).wait()
