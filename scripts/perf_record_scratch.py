@@ -61,7 +61,7 @@ for perf_item in perf_items:
     # cycles and instructions are profiled for every run
     perf_item_split = perf_item.split(',')
     perfdata_file = perf_item_split[2] + '_' + perf_item_split[3] + '_perf.data'
-    cp_cmd = utils.cp_str.format('/users/' + uid + '/scripts/perf.data', '/users/' + uid + '/perfdata/' + perfdata_file)
+    cp_cmd = 'sudo ' + utils.cp_str.format('/users/' + uid + '/scripts/perf.data', '/users/' + uid + '/perfdata/' + perfdata_file)
     subprocess.Popen(cp_cmd.split()).wait()
 
 home_path = '/users/' + uid + '/'
@@ -78,8 +78,8 @@ for perf_item in perf_items:
     perf_item_split = perf_item.split(',')
     perfdata_file = perf_item_split[2] + '_' + perf_item_split[3] + '_perf.data'
     perfdata_filepath = '/users/' + uid + '/perfdata/' + perfdata_file
-    #autoperf_cmd = 'bash /users/' + uid + '/scripts/autoperf.sh ' + perfdata_filepath
-    #subprocess.Popen(autoperf_cmd.split()).wait()
+    autoperf_cmd = 'bash /users/' + uid + '/scripts/autoperf.sh ' + perfdata_filepath
+    subprocess.Popen(autoperf_cmd.split()).wait()
 
     cp_cmd = utils.cp_str.format(scripts_path + 'perf.hist.0', perfdata_path + perf_item_split[2] + '_' + perf_item_split[3] + '_perf.hist.0')
     subprocess.Popen(cp_cmd.split()).wait()
