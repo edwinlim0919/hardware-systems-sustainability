@@ -1,9 +1,7 @@
-# Scripting for running experiments related to sustainable hardware heterogeneity
-
-Usable scripting for running DeathStarBench's HotelReservation application in tandem with Intel's IPU emulator on CloudLab.
+# Sustainable Hardware Heterogeneity
+Usable scripting for running DeathStarBench applications on CloudLab.
 
 ## CloudLab Setup
-
 First, ssh into your CloudLab master node with the -A option to cache public keys in your ssh-agent. An example is shown below, but you will need your own CloudLab account and experiment cluster.
 ```bash
 ssh -A edwinlim@ms0415.utah.cloudlab.us
