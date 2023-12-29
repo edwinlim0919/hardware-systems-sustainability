@@ -1,3 +1,6 @@
 [submodule "datacenter-soc"]
 	path = datacenter-soc
 	url = git@github.com:STAR-Research/datacenter-soc.git
+[submodule "DeathStarBench"]
+	path = DeathStarBench
+	url = /dev/shm/hardware-systems-sustainability/DeathStarBench

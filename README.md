@@ -14,6 +14,12 @@ git clone git@github.com:edwinlim0919/hardware-systems-sustainability.git
 cd hardware-systems-sustainability
 ```
 
+Once cloned, initialize the DeathStarBench submodule.
+```bash
+git submodule init DeathStarBench/
+git submodule update --init
+```
+
 Next, still within the hardware-systems-sustainability/ directory, set up some bash environment stuff.
 Press "y" and enter whenever prompted.
 You may need to log out of the node and log back in to see env changes take affect.
