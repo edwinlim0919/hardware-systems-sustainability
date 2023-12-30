@@ -13,6 +13,7 @@ import metadata
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('hardware-systems-sustainability')
 
+
 def setup_application(application_name, replace_zip, node_ssh_list):
     logger.info('----------------')
     application_name_upper = application_name.upper()
@@ -124,21 +125,28 @@ def setup_docker_swarm(published, target, registry):
     docker_swarm_init_str = 'sudo docker swarm init ' + \
                             '--advertise-addr {0}'
     docker_swarm_init_cmd = docker_swarm_init_str.format(advertise_addr)
+    logger.info('advertise-addr: ' + advertise_addr)
+    logger.info('Initializing docker swarm...')
+    subprocess.Popen(docker_swarm_init_cmd.split()).wait()
+
+    logger.info('Set up Docker Swarm successfully.')
+    logger.info('----------------')
+
+
+def setup_docker_registry(published, target, registry):
+    logger.info('----------------')
+    logger.info('Setting up Docker registry...')
+
     docker_service_create_str = 'sudo docker service create ' + \
                                 '--name registry ' + \
                                 '--publish published={0},target={1} registry:{2}'
     docker_service_create_cmd = docker_service_create_str.format(published,
                                                                  target,
                                                                  registry)
-    logger.info('advertise-addr: ' + advertise_addr)
-    logger.info('Initializing docker swarm...')
-    subprocess.Popen(docker_swarm_init_cmd.split()).wait()
     logger.info('Starting local registry on this node...')
-    logger.info('published: ' + str(published))
-    logger.info('target: ' + str(target))
-    logger.info('registry: ' + str(registry))
     subprocess.Popen(docker_service_create_cmd.split()).wait()
-    logger.info('Set up docker swarm successfully.')
+
+    logger.info('Set up Docker registry successfully.')
     logger.info('----------------')
 
 
@@ -250,14 +258,9 @@ def start_application(manager_addr, application_name, docker_application_name, s
 
     logger.info('Copying Docker Swarm yml to application directory in manager node')
     cp_dest = application_info['node_dir_path'].format(uid) + '/' + swarm_yml_name
-#    cp_dest = '/users/edwinlim/medium_hotel_db_replica_profile_mongo/DeathStarBench/hotelReservation/hotelreservation_grpc_c6320_24_docker-compose-swarm.yml'
     cp_src = os.getcwd() + '/../configs/' + swarm_yml_name
-    #scp_cmd = utils.scp_str.format(scp_src, uid, manager_addr, scp_dest)
-    #print(scp_cmd)
     cp_cmd = utils.cp_str.format(cp_src, cp_dest)
-    print(cp_cmd)
     subprocess.Popen(cp_cmd.split()).wait()
-    #subprocess.Popen(scp_cmd.split()).wait()
 
     logger.info('Deploying Docker Swarm to start application')
     application_deploy_cmd = utils.application_deploy_str.format(swarm_yml_name, docker_application_name)
@@ -329,9 +332,7 @@ def run_workload_generator(wrkgen_addr, application_name, numthreads, numconnect
     subprocess.Popen(ssh_cmd.split() + [rm_cmd]).wait()
     subprocess.Popen(rm_cmd.split()).wait()
 
-    print('ALL AVG_LATENCIES')
-    print(avg_latencies)
-
+    logger.info('ALL AVG LATENCIES: ' + str(avg_latencies))
     logger.info('Working generator results collected and parsed')
     logger.info('----------------')
     return avg_latencies
