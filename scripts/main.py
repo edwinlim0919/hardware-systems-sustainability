@@ -11,7 +11,7 @@ import metadata
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-logger = logging.getLogger('grpc-hotel-ipu')
+logger = logging.getLogger('hardware-systems-sustainability')
 
 def setup_application(application_name, replace_zip, node_ssh_list):
     logger.info('----------------')
@@ -19,7 +19,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     logger.info('Setting up ' + application_name_upper + ' on all Docker Swarm nodes...')
 
     if application_name_upper not in metadata.application_info:
-        ValueError('specified application does not exist in metadata.appication_info')
+        ValueError(application_name_upper + ' does not exist in metadata.appication_info')
     application_info = metadata.application_info[application_name_upper]
 
     node_ssh_lines_unfiltered = [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]
@@ -30,31 +30,40 @@ def setup_application(application_name, replace_zip, node_ssh_list):
             full_line += (word + ' ')
         node_ssh_lines.append(full_line.strip())
 
-    # ssh'ing into every node to avoid StrictHostKeyChecking
-    # disabling this does not work anymore for some reason
-    home_dir_all = '/users/' + os.getlogin() + '/*'
-
-    # Zip grpc-hotel-ipu/datacenter-soc into grpc-hotel-ipu/zipped-applications
-    application_dir_path = application_info['manager_dir_path']
-    application_zip_path = '../zipped-applications/' + application_name + '.zip'
-    application_folder_paths = application_info['zip_paths']
-    zip_cmd_arg1 = ''
-    for zip_path in application_folder_paths.values():
-        zip_cmd_arg1 += (' ' + zip_path)
-    zip_str = 'zip -r {0} {1}'
-    zip_cmd = zip_str.format(application_zip_path,
-                             zip_cmd_arg1)
-    if os.path.isfile(application_zip_path) and not replace_zip:
-        logger.info(application_zip_path + ' already exists and replace-zip not specified, skipping zip step')
+    # Zip hardware-systems-sustainability/DeathStarBench into hardware-systems-sustainability/zipped-applications
+    dsb_dir_path = '../DeathStarBench'
+    dsb_zip_path = '../zipped-applications/DeathStarBench.zip'
+    zip_cmd = utils.zip_str.format(dsb_zip_path,
+                                   dsb_dir_path)
+    if os.path.isfile(dsb_zip_path) and not replace_zip:
+        logger.info(dsb_zip_path + ' already exists and replace-zip is not specified, skipping zip step')
     else:
-        logger.info('zipping ' + application_zip_path)
+        logger.info('zipping ' + dsb_zip_path)
         subprocess.Popen(zip_cmd.split()).wait()
+
+    # Zip hardware-systems-sustainability/datacenter-soc into grpc-hotel-ipu/zipped-applications
+    #application_dir_path = application_info['manager_dir_path']
+    #application_zip_path = '../zipped-applications/' + application_name + '.zip'
+    #application_folder_paths = application_info['zip_paths']
+    #zip_cmd_arg1 = ''
+    #for zip_path in application_folder_paths.values():
+    #    zip_cmd_arg1 += (' ' + zip_path)
+    #zip_str = 'zip -r {0} {1}'
+    #zip_cmd = zip_str.format(application_zip_path,
+    #                         zip_cmd_arg1)
+    #if os.path.isfile(application_zip_path) and not replace_zip:
+    #    logger.info(application_zip_path + ' already exists and replace-zip not specified, skipping zip step')
+    #else:
+    #    logger.info('zipping ' + application_zip_path)
+    #    subprocess.Popen(zip_cmd.split()).wait()
 
     # For each node in node_ssh_list, copy application zip and unzip
     uid = os.getlogin()
-    zip_file_name = utils.extract_path_end(application_zip_path)
+    zip_file_name = utils.extract_path_end(dsb_zip_path)
     procs_list = []
 
+    # Clearing every node to avoid StrictHostKeyChecking
+    home_dir_all = '/users/' + os.getlogin() + '/*'
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
         ssh_cmd = utils.ssh_str.format(uid, addr_only)
@@ -67,10 +76,10 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        scp_cmd = utils.scp_str.format(application_zip_path,
-                                 uid,
-                                 addr_only,
-                                 '~/' + zip_file_name)
+        scp_cmd = utils.scp_str.format(dsb_zip_path,
+                                       uid,
+                                       addr_only,
+                                       '~/' + zip_file_name)
         procs_list.append(subprocess.Popen(scp_cmd.split()))
     for proc in procs_list:
         proc.wait()
@@ -84,43 +93,43 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     for proc in procs_list:
         proc.wait()
 
-    procs_list.clear()
-    for ssh_line in node_ssh_lines:
-        addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = utils.ssh_str.format(uid, addr_only)
-        cp_cmds = []
-        for zip_path in application_folder_paths.values():
-            zip_path_end = utils.extract_path_end(zip_path)
-            zip_path_dest = '~/' + zip_path_end
-            zip_path_src = '~/datacenter-soc/' + zip_path
-            cp_cmd = utils.cp_str.format(zip_path_src, zip_path_dest)
-            cp_cmds.append(cp_cmd)
-        for cp_cmd in cp_cmds:
-            procs_list.append(subprocess.Popen(ssh_cmd.split() + [cp_cmd]))
-    for proc in procs_list:
-        proc.wait()
+    #procs_list.clear()
+    #for ssh_line in node_ssh_lines:
+    #    addr_only = utils.extract_ssh_addr(ssh_line)
+    #    ssh_cmd = utils.ssh_str.format(uid, addr_only)
+    #    cp_cmds = []
+    #    for zip_path in application_folder_paths.values():
+    #        zip_path_end = utils.extract_path_end(zip_path)
+    #        zip_path_dest = '~/' + zip_path_end
+    #        zip_path_src = '~/datacenter-soc/' + zip_path
+    #        cp_cmd = utils.cp_str.format(zip_path_src, zip_path_dest)
+    #        cp_cmds.append(cp_cmd)
+    #    for cp_cmd in cp_cmds:
+    #        procs_list.append(subprocess.Popen(ssh_cmd.split() + [cp_cmd]))
+    #for proc in procs_list:
+    #    proc.wait()
 
     # Copy scripts and install dependencies on all nodes
     logger.info('copying setup scripts for specified nodes')
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        scp_setup_cmd = utils.scp_str.format('../setup.sh',
+        scp_cmd = utils.scp_str.format('../setup.sh',
                                        uid,
                                        addr_only,
                                        '~/setup.sh')
-        procs_list.append(subprocess.Popen(scp_setup_cmd.split()))
+        procs_list.append(subprocess.Popen(scp_cmd.split()))
     for proc in procs_list:
         proc.wait()
 
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        scp_scripts_cmd = utils.scp_r_str.format('../scripts',
-                                           uid,
-                                           addr_only,
-                                           '~/scripts')
-        procs_list.append(subprocess.Popen(scp_scripts_cmd.split()))
+        scp_cmd = utils.scp_r_str.format('../scripts',
+                                         uid,
+                                         addr_only,
+                                         '~/scripts')
+        procs_list.append(subprocess.Popen(scp_cmd.split()))
     for proc in procs_list:
         proc.wait()
 
@@ -136,19 +145,19 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         proc.wait()
 
     # Build docker images for all of the microservices
-    procs_list.clear()
-    for ssh_line in node_ssh_lines:
-        addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = utils.ssh_str.format(uid, addr_only)
-        cd_cmd = utils.cd_str.format(application_info['node_dir_path'].format(uid))
-        docker_build_cmd = cd_cmd + ' ; sudo docker compose build'
-        #print(ssh_cmd + ' ' + docker_build_cmd)
-        procs_list.append(subprocess.Popen(ssh_cmd.split() +
-                          [docker_build_cmd]))
-    for proc in procs_list:
-        proc.wait()
+    #procs_list.clear()
+    #for ssh_line in node_ssh_lines:
+    #    addr_only = utils.extract_ssh_addr(ssh_line)
+    #    ssh_cmd = utils.ssh_str.format(uid, addr_only)
+    #    cd_cmd = utils.cd_str.format(application_info['node_dir_path'].format(uid))
+    #    docker_build_cmd = cd_cmd + ' ; sudo docker compose build'
+    #    #print(ssh_cmd + ' ' + docker_build_cmd)
+    #    procs_list.append(subprocess.Popen(ssh_cmd.split() +
+    #                      [docker_build_cmd]))
+    #for proc in procs_list:
+    #    proc.wait()
 
-    logger.info('Set up ' + application_name + ' on all Docker Swarm nodes successfully')
+    logger.info('Set up ' + application_name_upper + ' on all Docker Swarm nodes successfully')
     logger.info('----------------')
 
 
@@ -409,7 +418,7 @@ def run_latency_sweep(wrkgen_addr, application_name, numthreads, numconnections,
                str(start_rps) + '-' + \
                str(max_rps) + '-' + \
                str(rps_scaling)
-    logger.info('Writing latency sweep results to: grpc-hotel-ipu/results/')
+    logger.info('Writing latency sweep results to: hardware-systems-sustainability/results/')
     f = open("../results/" + res_file, "w")
     f.writelines(lines)
     f.close()
@@ -441,11 +450,11 @@ def get_args():
     parser.add_argument('--replace-zip',
                         dest='replace_zip',
                         action='store_true',
-                        help='replace if .zip already exists in grpc-hotel-ipu/zipped-applications')
+                        help='replace if .zip already exists in hardware-systems-sustainability/zipped-applications')
     parser.add_argument('--node-ssh-list',
                         dest='node_ssh_list',
                         type=str,
-                        help='provide name of file within grpc-hotel-ipu/node-ssh-lists/ containing CloudLab ssh commands')
+                        help='provide name of file within hardware-systems-sustainability/node-ssh-lists/ containing CloudLab ssh commands')
     # Setting up docker swarm
     parser.add_argument('--setup-docker-swarm',
                         dest='setup_docker_swarm',
@@ -494,7 +503,7 @@ def get_args():
     parser.add_argument('--swarm-yml-name',
                         dest='swarm_yml_name',
                         type=str,
-                        help='provide name of docker-compose-swarm yml file within grpc-hotel-ipu/configs containing swarm node mappings')
+                        help='provide name of docker-compose-swarm yml file within hardware-systems-sustainability/configs containing swarm node mappings')
     # Running workload generator
     parser.add_argument('--run-workload-generator',
                         dest='run_workload_generator',
@@ -600,7 +609,7 @@ if __name__ == '__main__':
         if args.docker_application_name is None:
             raise ValueError('docker application name must be provided for starting the application')
         if args.swarm_yml_name is None:
-            raise ValueError('must provide name of Docker Swarm yml within grpc-hotel-ipu/configs')
+            raise ValueError('must provide name of Docker Swarm yml within hardware-systems-sustainability/configs')
         start_application(args.manager_addr,
                           args.application_name,
                           args.docker_application_name,

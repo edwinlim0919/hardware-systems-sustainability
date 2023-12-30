@@ -11,6 +11,7 @@ scp_str = 'scp -o StrictHostKeyChecking=no {0} {1}@{2}:{3}'
 scp_r_str = 'scp -o StrictHostKeyChecking=no -r {0} {1}@{2}:{3}'
 scp_reverse_str = 'scp -o StrictHostKeyChecking=no {0}@{1}:{2} {3}'
 ssh_str = 'ssh {0}@{1}'
+zip_str = 'zip -r {0} {1}'
 unzip_str = 'yes | unzip {0}'
 cp_str = 'cp -R {0} {1}'
 cd_str = 'cd {0}'
@@ -21,7 +22,6 @@ application_deploy_str = 'sudo docker stack deploy --compose-file={0} {1}'
 ps_grep_str = 'sudo docker ps | grep {0}'
 top_str = 'sudo docker top {0}'
 perf_str = 'sudo perf record -F 250 -e {0} --call-graph lbr -p {1} sleep 120'
-#perf_str = 'bash ~/scripts/run-perf.sh {0} {1}'
 
 
 # Validates that ip_address string is in a valid format
@@ -38,7 +38,7 @@ def extract_path_end(path):
     return path.split('/')[-1]
 
 
-# opens and returns file handle of file relative to grpc-hotel-ipu/
+# opens and returns file handle of file relative to hardware-systems-sustainability/
 def get_file_relative_path(file_name, relative_path):
     curr_dir = os.getcwd()
     file_path = curr_dir + '/' + relative_path + '/' + file_name

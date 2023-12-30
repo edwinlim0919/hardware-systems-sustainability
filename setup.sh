@@ -20,4 +20,4 @@ sudo luarocks install luasocket
 sudo apt install linux-tools-`uname -r` linux-tools-generic htop -y
 sudo apt install libelf-dev libdw-dev systemtap-sdt-dev libunwind-dev libslang2-dev libnuma-dev libiberty-dev -y
 
-git clone https://github.com/delimitrou/DeathStarBench.git
+#git clone https://github.com/delimitrou/DeathStarBench.git
