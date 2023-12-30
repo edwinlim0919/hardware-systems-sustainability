@@ -41,22 +41,6 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         logger.info('zipping ' + dsb_zip_path)
         subprocess.Popen(zip_cmd.split()).wait()
 
-    # Zip hardware-systems-sustainability/datacenter-soc into grpc-hotel-ipu/zipped-applications
-    #application_dir_path = application_info['manager_dir_path']
-    #application_zip_path = '../zipped-applications/' + application_name + '.zip'
-    #application_folder_paths = application_info['zip_paths']
-    #zip_cmd_arg1 = ''
-    #for zip_path in application_folder_paths.values():
-    #    zip_cmd_arg1 += (' ' + zip_path)
-    #zip_str = 'zip -r {0} {1}'
-    #zip_cmd = zip_str.format(application_zip_path,
-    #                         zip_cmd_arg1)
-    #if os.path.isfile(application_zip_path) and not replace_zip:
-    #    logger.info(application_zip_path + ' already exists and replace-zip not specified, skipping zip step')
-    #else:
-    #    logger.info('zipping ' + application_zip_path)
-    #    subprocess.Popen(zip_cmd.split()).wait()
-
     # For each node in node_ssh_list, copy application zip and unzip
     uid = os.getlogin()
     zip_file_name = utils.extract_path_end(dsb_zip_path)
@@ -93,22 +77,6 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     for proc in procs_list:
         proc.wait()
 
-    #procs_list.clear()
-    #for ssh_line in node_ssh_lines:
-    #    addr_only = utils.extract_ssh_addr(ssh_line)
-    #    ssh_cmd = utils.ssh_str.format(uid, addr_only)
-    #    cp_cmds = []
-    #    for zip_path in application_folder_paths.values():
-    #        zip_path_end = utils.extract_path_end(zip_path)
-    #        zip_path_dest = '~/' + zip_path_end
-    #        zip_path_src = '~/datacenter-soc/' + zip_path
-    #        cp_cmd = utils.cp_str.format(zip_path_src, zip_path_dest)
-    #        cp_cmds.append(cp_cmd)
-    #    for cp_cmd in cp_cmds:
-    #        procs_list.append(subprocess.Popen(ssh_cmd.split() + [cp_cmd]))
-    #for proc in procs_list:
-    #    proc.wait()
-
     # Copy scripts and install dependencies on all nodes
     logger.info('copying setup scripts for specified nodes')
     procs_list.clear()
@@ -143,19 +111,6 @@ def setup_application(application_name, replace_zip, node_ssh_list):
         procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]))
     for proc in procs_list:
         proc.wait()
-
-    # Build docker images for all of the microservices
-    #procs_list.clear()
-    #for ssh_line in node_ssh_lines:
-    #    addr_only = utils.extract_ssh_addr(ssh_line)
-    #    ssh_cmd = utils.ssh_str.format(uid, addr_only)
-    #    cd_cmd = utils.cd_str.format(application_info['node_dir_path'].format(uid))
-    #    docker_build_cmd = cd_cmd + ' ; sudo docker compose build'
-    #    #print(ssh_cmd + ' ' + docker_build_cmd)
-    #    procs_list.append(subprocess.Popen(ssh_cmd.split() +
-    #                      [docker_build_cmd]))
-    #for proc in procs_list:
-    #    proc.wait()
 
     logger.info('Set up ' + application_name_upper + ' on all Docker Swarm nodes successfully')
     logger.info('----------------')
