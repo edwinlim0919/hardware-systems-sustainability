@@ -12,6 +12,7 @@ application_info = {
                        'wrk' : '../datacenter-soc/workload_generator/wrk2'}
     },
     'SOCIALNETWORK' : {
-        'dsb_path' : '/DeathStarBench/socialNetwork'
+        'dsb_path' : '/users/{0}/DeathStarBench/socialNetwork'
+        #''
     }
 }

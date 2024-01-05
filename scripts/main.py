@@ -117,7 +117,7 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     logger.info('----------------')
 
 
-def setup_docker_swarm(published, target, registry):
+def setup_docker_swarm():
     logger.info('----------------')
     logger.info('Setting up Docker Swarm with current node as manager...')
 
@@ -237,34 +237,46 @@ def label_docker_swarm(node_ssh_list):
     logger.info('----------------')
 
 
-def start_application(manager_addr, application_name, docker_application_name, swarm_yml_name):
-    logger.info('----------------')
+def start_application(manager_addr, application_name, docker_application_name, swarm_yml_name, nodes_pinned):
     uid = os.getlogin()
     ssh_cmd = utils.ssh_str.format(uid, manager_addr)
     application_name_upper = application_name.upper()
+    logger.info('----------------')
     logger.info('Starting ' + application_name_upper + ' across Docker Swarm nodes')
     if application_name_upper not in metadata.application_info:
         ValueError('specified application does not exist in metadata.appication_info')
     application_info = metadata.application_info[application_name_upper]
-    cd_cmd = utils.cd_str.format(application_info['node_dir_path'].format(uid))
 
-    logger.info('Building all the Docker images')
-    build_images_cmd = 'sudo docker compose build'
-    subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [build_images_cmd]).wait()
+    #cd_cmd = utils.cd_str.format(application_info['node_dir_path'].format(uid))
 
-    logger.info('Pushing Docker images to local registry')
-    rebuilt_push_images_cmd = 'bash ~/scripts/rebuilt-push-images.sh'
-    subprocess.Popen(ssh_cmd.split() + [rebuilt_push_images_cmd]).wait()
+    #logger.info('Building all the Docker images')
+    #build_images_cmd = 'sudo docker compose build'
+    #subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [build_images_cmd]).wait()
 
-    logger.info('Copying Docker Swarm yml to application directory in manager node')
-    cp_dest = application_info['node_dir_path'].format(uid) + '/' + swarm_yml_name
-    cp_src = os.getcwd() + '/../configs/' + swarm_yml_name
-    cp_cmd = utils.cp_str.format(cp_src, cp_dest)
-    subprocess.Popen(cp_cmd.split()).wait()
+    #logger.info('Pushing Docker images to local registry')
+    #rebuilt_push_images_cmd = 'bash ~/scripts/rebuilt-push-images.sh'
+    #subprocess.Popen(ssh_cmd.split() + [rebuilt_push_images_cmd]).wait()
+
+    #logger.info('Copying Docker Swarm yml to application directory in manager node')
+    #cp_dest = application_info['node_dir_path'].format(uid) + '/' + swarm_yml_name
+    #cp_src = os.getcwd() + '/../configs/' + swarm_yml_name
+    #cp_cmd = utils.cp_str.format(cp_src, cp_dest)
+    #subprocess.Popen(cp_cmd.split()).wait()
 
     logger.info('Deploying Docker Swarm to start application')
-    application_deploy_cmd = utils.application_deploy_str.format(swarm_yml_name, docker_application_name)
-    subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [application_deploy_cmd]).wait()
+    if nodes_pinned:
+        # X amount of nodes, swarm master node can be isolated from other services if needed (manual placement)
+        # TODO: Will not currently work becaus cd_cmd is undefined
+        application_deploy_cmd = utils.application_deploy_str.format(swarm_yml_name, docker_application_name)
+        subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [application_deploy_cmd]).wait()
+    else:
+        # X amount of nodes, swarm master node can be colocated with other services (automatic placement)
+        dsb_path = application_info['dsb_path'].format(uid)
+        cd_cmd = utils.cd_str.format(dsb_path)
+        application_deploy_cmd = utils.application_deploy_str.format(swarm_yml_name, docker_application_name)
+
+        print('cd_cmd: ' + cd_cmd)
+        print('application_deploy_cmd: ' + application_deploy_cmd)
 
     logger.info(application_name_upper + ' successfully deployed')
     logger.info('----------------')
@@ -411,11 +423,16 @@ def get_args():
                         dest='node_ssh_list',
                         type=str,
                         help='provide name of file within hardware-systems-sustainability/node-ssh-lists/ containing CloudLab ssh commands')
-    # Setting up docker swarm
+    # Setting up Docker Swarm
     parser.add_argument('--setup-docker-swarm',
                         dest='setup_docker_swarm',
                         action='store_true',
-                        help='specify arg to set up docker swarm')
+                        help='specify arg to set up Docker Swarm')
+    # Setting up Docker registry
+    parser.add_argument('--setup-docker-register',
+                        dest='setup_docker_registry',
+                        action='store_true',
+                        help='specify arg to set up Docker registry')
     parser.add_argument('--published',
                         dest='published',
                         type=int,
@@ -452,6 +469,10 @@ def get_args():
                         dest='start_application',
                         action='store_true',
                         help='specify arg to start specified application')
+    parser.add_argument('--nodes-pinned',
+                        dest='nodes_pinned',
+                        action='store_true',
+                        help='specify whether a specific node placement has been made for each microservice')
     parser.add_argument('--docker-application-name',
                         dest='docker_application_name',
                         type=str,
@@ -530,6 +551,9 @@ if __name__ == '__main__':
         setup_application(args.application_name, args.replace_zip, args.node_ssh_list)
 
     if args.setup_docker_swarm:
+        setup_docker_swarm()
+
+    if args.setup_docker_registry:
         if args.published is None:
             raise ValueError('published value should be specified for creating docker registry service')
         if args.target is None:
@@ -569,7 +593,8 @@ if __name__ == '__main__':
         start_application(args.manager_addr,
                           args.application_name,
                           args.docker_application_name,
-                          args.swarm_yml_name)
+                          args.swarm_yml_name,
+                          args.nodes_pinned)
 
     if args.run_workload_generator:
         if args.wrkgen_addr is None:
