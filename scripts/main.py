@@ -14,110 +14,6 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('hardware-systems-sustainability')
 
 
-# TODO: Currently deprecated 
-#def setup_application(application_name, replace_zip, node_ssh_list):
-#    logger.info('----------------')
-#    application_name_upper = application_name.upper()
-#    logger.info('Setting up ' + application_name_upper + ' on all Docker Swarm nodes...')
-#
-#    if application_name_upper not in metadata.application_info:
-#        ValueError(application_name_upper + ' does not exist in metadata.appication_info')
-#    application_info = metadata.application_info[application_name_upper]
-#
-#    node_ssh_lines_unfiltered = [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]
-#    node_ssh_lines = []
-#    for word_list in [line.split()[:-1] for line in node_ssh_lines_unfiltered]:
-#        full_line = ''
-#        for word in word_list:
-#            full_line += (word + ' ')
-#        node_ssh_lines.append(full_line.strip())
-#
-#    # Zip hardware-systems-sustainability/DeathStarBench into hardware-systems-sustainability/zipped-applications
-#    dsb_dir_path = '../DeathStarBench'
-#    dsb_zip_path = '../zipped-applications/DeathStarBench.zip'
-#    zip_cmd = utils.zip_str.format(dsb_zip_path,
-#                                   dsb_dir_path)
-#    if os.path.isfile(dsb_zip_path) and not replace_zip:
-#        logger.info(dsb_zip_path + ' already exists and replace-zip is not specified, skipping zip step')
-#    else:
-#        logger.info('zipping ' + dsb_zip_path)
-#        subprocess.Popen(zip_cmd.split()).wait()
-#
-#    # For each node in node_ssh_list, copy application zip and unzip
-#    uid = os.getlogin()
-#    zip_file_name = utils.extract_path_end(dsb_zip_path)
-#    procs_list = []
-#
-#    # Clearing every node to avoid StrictHostKeyChecking
-#    home_dir_all = '/users/' + os.getlogin() + '/*'
-#    for ssh_line in node_ssh_lines:
-#        addr_only = utils.extract_ssh_addr(ssh_line)
-#        ssh_cmd = utils.ssh_str.format(uid, addr_only)
-#        rm_cmd = utils.rm_rf_str.format(home_dir_all)
-#        procs_list.append(subprocess.Popen(ssh_cmd.split() + [rm_cmd]))
-#    for proc in procs_list:
-#        proc.wait()
-#
-#    logger.info('copying, unzipping, and organizing ' + zip_file_name + ' for specified nodes')
-#    procs_list.clear()
-#    for ssh_line in node_ssh_lines:
-#        addr_only = utils.extract_ssh_addr(ssh_line)
-#        scp_cmd = utils.scp_str.format(dsb_zip_path,
-#                                       uid,
-#                                       addr_only,
-#                                       '~/' + zip_file_name)
-#        procs_list.append(subprocess.Popen(scp_cmd.split()))
-#    for proc in procs_list:
-#        proc.wait()
-#
-#    procs_list.clear()
-#    for ssh_line in node_ssh_lines:
-#        addr_only = utils.extract_ssh_addr(ssh_line)
-#        ssh_cmd = utils.ssh_str.format(uid, addr_only)
-#        unzip_cmd = utils.unzip_str.format('~/' + zip_file_name)
-#        procs_list.append(subprocess.Popen(ssh_cmd.split() + [unzip_cmd]))
-#    for proc in procs_list:
-#        proc.wait()
-#
-#    # Copy scripts and install dependencies on all nodes
-#    logger.info('copying setup scripts for specified nodes')
-#    procs_list.clear()
-#    for ssh_line in node_ssh_lines:
-#        addr_only = utils.extract_ssh_addr(ssh_line)
-#        scp_cmd = utils.scp_str.format('../setup.sh',
-#                                       uid,
-#                                       addr_only,
-#                                       '~/setup.sh')
-#        procs_list.append(subprocess.Popen(scp_cmd.split()))
-#    for proc in procs_list:
-#        proc.wait()
-#
-#    procs_list.clear()
-#    for ssh_line in node_ssh_lines:
-#        addr_only = utils.extract_ssh_addr(ssh_line)
-#        scp_cmd = utils.scp_r_str.format('../scripts',
-#                                         uid,
-#                                         addr_only,
-#                                         '~/scripts')
-#        procs_list.append(subprocess.Popen(scp_cmd.split()))
-#    for proc in procs_list:
-#        proc.wait()
-#
-#    # Since ./setup.sh takes a while, run in parallel and wait
-#    logger.info('running setup scripts in parallel for specified nodes')
-#    procs_list.clear()
-#    for ssh_line in node_ssh_lines:
-#        addr_only = utils.extract_ssh_addr(ssh_line)
-#        ssh_cmd = utils.ssh_str.format(uid, addr_only)
-#        setup_cmd = 'cd ~/ ; yes | ./setup.sh'
-#        procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]))
-#    for proc in procs_list:
-#        proc.wait()
-#
-#    logger.info('Set up ' + application_name_upper + ' on all Docker Swarm nodes successfully')
-#    logger.info('----------------')
-
-
 def setup_nodes(node_ssh_list):
     logger.info('----------------')
     logger.info('Setting up necessary dependencies on all nodes...')
@@ -315,26 +211,10 @@ def start_application(manager_addr, application_name, docker_application_name, s
         ValueError('specified application does not exist in metadata.appication_info')
     application_info = metadata.application_info[application_name_upper]
 
-    #cd_cmd = utils.cd_str.format(application_info['node_dir_path'].format(uid))
-
-    #logger.info('Building all the Docker images')
-    #build_images_cmd = 'sudo docker compose build'
-    #subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [build_images_cmd]).wait()
-
-    #logger.info('Pushing Docker images to local registry')
-    #rebuilt_push_images_cmd = 'bash ~/scripts/rebuilt-push-images.sh'
-    #subprocess.Popen(ssh_cmd.split() + [rebuilt_push_images_cmd]).wait()
-
-    #logger.info('Copying Docker Swarm yml to application directory in manager node')
-    #cp_dest = application_info['node_dir_path'].format(uid) + '/' + swarm_yml_name
-    #cp_src = os.getcwd() + '/../configs/' + swarm_yml_name
-    #cp_cmd = utils.cp_str.format(cp_src, cp_dest)
-    #subprocess.Popen(cp_cmd.split()).wait()
-
     logger.info('Deploying Docker Swarm to start application')
     if nodes_pinned:
         # X amount of nodes, swarm master node can be isolated from other services if needed (manual placement)
-        # TODO: Will not currently work becaus cd_cmd is undefined
+        # TODO: Does not work currently (make it work)
         application_deploy_cmd = utils.application_deploy_str.format(swarm_yml_name, docker_application_name)
         subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [application_deploy_cmd]).wait()
     else:
