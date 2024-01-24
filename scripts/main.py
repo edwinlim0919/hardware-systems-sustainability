@@ -201,30 +201,33 @@ def label_docker_swarm(node_ssh_list):
     logger.info('----------------')
 
 
-def start_application(manager_addr, application_name, docker_application_name, swarm_yml_name, nodes_pinned):
+def start_application(manager_addr, application_name, docker_compose_file, nodes_pinned):
     uid = os.getlogin()
     ssh_cmd = utils.ssh_str.format(uid, manager_addr)
     application_name_upper = application_name.upper()
     logger.info('----------------')
-    logger.info('Starting ' + application_name_upper + ' across Docker Swarm nodes')
+    logger.info('Starting ' + application_name_upper + ' across Docker Swarm nodes...')
     if application_name_upper not in metadata.application_info:
         ValueError('specified application does not exist in metadata.appication_info')
     application_info = metadata.application_info[application_name_upper]
+    docker_name = application_info['docker_name']
 
     logger.info('Deploying Docker Swarm to start application')
     if nodes_pinned:
         # X amount of nodes, swarm master node can be isolated from other services if needed (manual placement)
         # TODO: Does not work currently (make it work)
-        application_deploy_cmd = utils.application_deploy_str.format(swarm_yml_name, docker_application_name)
-        subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [application_deploy_cmd]).wait()
+        #application_deploy_cmd = utils.application_deploy_str.format(docker_compose_file, application_name)
+        #subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [application_deploy_cmd]).wait()
+        print('AY CARAMBA!!!')
     else:
         # X amount of nodes, swarm master node can be colocated with other services (automatic placement)
-        dsb_path = application_info['dsb_path'].format(uid)
-        cd_cmd = utils.cd_str.format(dsb_path)
-        application_deploy_cmd = utils.application_deploy_str.format(swarm_yml_name, docker_application_name)
-
-        print('cd_cmd: ' + cd_cmd)
-        print('application_deploy_cmd: ' + application_deploy_cmd)
+        manager_dsb_path = application_info['manager_dsb_path']
+        application_deploy_cmd = utils.application_deploy_str.format(docker_compose_file, docker_name)
+        #print('application_deploy_cmd: ' + application_deploy_cmd)
+        scripts_dir = os.getcwd()
+        os.chdir(manager_dsb_path)
+        subprocess.Popen(application_deploy_cmd.split()).wait()
+        os.chdir(scripts_dir)
 
     logger.info(application_name_upper + ' successfully deployed')
     logger.info('----------------')
@@ -354,11 +357,6 @@ def run_workload_generator_profiling(pid):
 def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
 
-    # Setting up DeathStarBench applications on CloudLab nodes
-    #parser.add_argument('--setup-application',
-    #                    dest='setup_application',
-    #                    action='store_true',
-    #                    help='specify arg to setup specified application')
     parser.add_argument('--setup-nodes',
                         dest='setup_nodes',
                         action='store_true',
@@ -425,12 +423,8 @@ def get_args():
                         dest='nodes_pinned',
                         action='store_true',
                         help='specify whether a specific node placement has been made for each microservice')
-    parser.add_argument('--docker-application-name',
-                        dest='docker_application_name',
-                        type=str,
-                        help='specify the name of the docker application (may be different than --application-name)')
-    parser.add_argument('--swarm-yml-name',
-                        dest='swarm_yml_name',
+    parser.add_argument('--docker-compose-file',
+                        dest='docker_compose_file',
                         type=str,
                         help='provide name of docker-compose-swarm yml file within hardware-systems-sustainability/configs containing swarm node mappings')
     # Running workload generator
@@ -543,14 +537,11 @@ if __name__ == '__main__':
             raise ValueError('must provide ssh address of the swarm manager node')
         if args.application_name is None:
             raise ValueError('application name must be provided for starting the application')
-        if args.docker_application_name is None:
-            raise ValueError('docker application name must be provided for starting the application')
-        if args.swarm_yml_name is None:
+        if args.docker_compose_file is None:
             raise ValueError('must provide name of Docker Swarm yml within hardware-systems-sustainability/configs')
         start_application(args.manager_addr,
                           args.application_name,
-                          args.docker_application_name,
-                          args.swarm_yml_name,
+                          args.docker_compose_file,
                           args.nodes_pinned)
 
     if args.run_workload_generator:
