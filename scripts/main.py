@@ -1,4 +1,4 @@
-# Main script for running gRPC HotelReservation in tandem with the Intel IPU emulator
+# Main script for easily running and profiling DeathStarBench
 
 import sys
 import os
@@ -14,15 +14,115 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('hardware-systems-sustainability')
 
 
-def setup_application(application_name, replace_zip, node_ssh_list):
+# TODO: Currently deprecated 
+#def setup_application(application_name, replace_zip, node_ssh_list):
+#    logger.info('----------------')
+#    application_name_upper = application_name.upper()
+#    logger.info('Setting up ' + application_name_upper + ' on all Docker Swarm nodes...')
+#
+#    if application_name_upper not in metadata.application_info:
+#        ValueError(application_name_upper + ' does not exist in metadata.appication_info')
+#    application_info = metadata.application_info[application_name_upper]
+#
+#    node_ssh_lines_unfiltered = [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]
+#    node_ssh_lines = []
+#    for word_list in [line.split()[:-1] for line in node_ssh_lines_unfiltered]:
+#        full_line = ''
+#        for word in word_list:
+#            full_line += (word + ' ')
+#        node_ssh_lines.append(full_line.strip())
+#
+#    # Zip hardware-systems-sustainability/DeathStarBench into hardware-systems-sustainability/zipped-applications
+#    dsb_dir_path = '../DeathStarBench'
+#    dsb_zip_path = '../zipped-applications/DeathStarBench.zip'
+#    zip_cmd = utils.zip_str.format(dsb_zip_path,
+#                                   dsb_dir_path)
+#    if os.path.isfile(dsb_zip_path) and not replace_zip:
+#        logger.info(dsb_zip_path + ' already exists and replace-zip is not specified, skipping zip step')
+#    else:
+#        logger.info('zipping ' + dsb_zip_path)
+#        subprocess.Popen(zip_cmd.split()).wait()
+#
+#    # For each node in node_ssh_list, copy application zip and unzip
+#    uid = os.getlogin()
+#    zip_file_name = utils.extract_path_end(dsb_zip_path)
+#    procs_list = []
+#
+#    # Clearing every node to avoid StrictHostKeyChecking
+#    home_dir_all = '/users/' + os.getlogin() + '/*'
+#    for ssh_line in node_ssh_lines:
+#        addr_only = utils.extract_ssh_addr(ssh_line)
+#        ssh_cmd = utils.ssh_str.format(uid, addr_only)
+#        rm_cmd = utils.rm_rf_str.format(home_dir_all)
+#        procs_list.append(subprocess.Popen(ssh_cmd.split() + [rm_cmd]))
+#    for proc in procs_list:
+#        proc.wait()
+#
+#    logger.info('copying, unzipping, and organizing ' + zip_file_name + ' for specified nodes')
+#    procs_list.clear()
+#    for ssh_line in node_ssh_lines:
+#        addr_only = utils.extract_ssh_addr(ssh_line)
+#        scp_cmd = utils.scp_str.format(dsb_zip_path,
+#                                       uid,
+#                                       addr_only,
+#                                       '~/' + zip_file_name)
+#        procs_list.append(subprocess.Popen(scp_cmd.split()))
+#    for proc in procs_list:
+#        proc.wait()
+#
+#    procs_list.clear()
+#    for ssh_line in node_ssh_lines:
+#        addr_only = utils.extract_ssh_addr(ssh_line)
+#        ssh_cmd = utils.ssh_str.format(uid, addr_only)
+#        unzip_cmd = utils.unzip_str.format('~/' + zip_file_name)
+#        procs_list.append(subprocess.Popen(ssh_cmd.split() + [unzip_cmd]))
+#    for proc in procs_list:
+#        proc.wait()
+#
+#    # Copy scripts and install dependencies on all nodes
+#    logger.info('copying setup scripts for specified nodes')
+#    procs_list.clear()
+#    for ssh_line in node_ssh_lines:
+#        addr_only = utils.extract_ssh_addr(ssh_line)
+#        scp_cmd = utils.scp_str.format('../setup.sh',
+#                                       uid,
+#                                       addr_only,
+#                                       '~/setup.sh')
+#        procs_list.append(subprocess.Popen(scp_cmd.split()))
+#    for proc in procs_list:
+#        proc.wait()
+#
+#    procs_list.clear()
+#    for ssh_line in node_ssh_lines:
+#        addr_only = utils.extract_ssh_addr(ssh_line)
+#        scp_cmd = utils.scp_r_str.format('../scripts',
+#                                         uid,
+#                                         addr_only,
+#                                         '~/scripts')
+#        procs_list.append(subprocess.Popen(scp_cmd.split()))
+#    for proc in procs_list:
+#        proc.wait()
+#
+#    # Since ./setup.sh takes a while, run in parallel and wait
+#    logger.info('running setup scripts in parallel for specified nodes')
+#    procs_list.clear()
+#    for ssh_line in node_ssh_lines:
+#        addr_only = utils.extract_ssh_addr(ssh_line)
+#        ssh_cmd = utils.ssh_str.format(uid, addr_only)
+#        setup_cmd = 'cd ~/ ; yes | ./setup.sh'
+#        procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]))
+#    for proc in procs_list:
+#        proc.wait()
+#
+#    logger.info('Set up ' + application_name_upper + ' on all Docker Swarm nodes successfully')
+#    logger.info('----------------')
+
+
+def setup_nodes(node_ssh_list):
     logger.info('----------------')
-    application_name_upper = application_name.upper()
-    logger.info('Setting up ' + application_name_upper + ' on all Docker Swarm nodes...')
+    logger.info('Setting up necessary dependencies on all nodes...')
 
-    if application_name_upper not in metadata.application_info:
-        ValueError(application_name_upper + ' does not exist in metadata.appication_info')
-    application_info = metadata.application_info[application_name_upper]
-
+    uid = os.getlogin()
     node_ssh_lines_unfiltered = [line.strip() for line in utils.get_file_relative_path(node_ssh_list, '../node-ssh-lists').readlines()]
     node_ssh_lines = []
     for word_list in [line.split()[:-1] for line in node_ssh_lines_unfiltered]:
@@ -31,79 +131,50 @@ def setup_application(application_name, replace_zip, node_ssh_list):
             full_line += (word + ' ')
         node_ssh_lines.append(full_line.strip())
 
-    # Zip hardware-systems-sustainability/DeathStarBench into hardware-systems-sustainability/zipped-applications
-    dsb_dir_path = '../DeathStarBench'
-    dsb_zip_path = '../zipped-applications/DeathStarBench.zip'
-    zip_cmd = utils.zip_str.format(dsb_zip_path,
-                                   dsb_dir_path)
-    if os.path.isfile(dsb_zip_path) and not replace_zip:
-        logger.info(dsb_zip_path + ' already exists and replace-zip is not specified, skipping zip step')
-    else:
-        logger.info('zipping ' + dsb_zip_path)
-        subprocess.Popen(zip_cmd.split()).wait()
-
-    # For each node in node_ssh_list, copy application zip and unzip
-    uid = os.getlogin()
-    zip_file_name = utils.extract_path_end(dsb_zip_path)
-    procs_list = []
-
-    # Clearing every node to avoid StrictHostKeyChecking
-    home_dir_all = '/users/' + os.getlogin() + '/*'
-    for ssh_line in node_ssh_lines:
-        addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = utils.ssh_str.format(uid, addr_only)
-        rm_cmd = utils.rm_rf_str.format(home_dir_all)
-        procs_list.append(subprocess.Popen(ssh_cmd.split() + [rm_cmd]))
-    for proc in procs_list:
-        proc.wait()
-
-    logger.info('copying, unzipping, and organizing ' + zip_file_name + ' for specified nodes')
-    procs_list.clear()
-    for ssh_line in node_ssh_lines:
-        addr_only = utils.extract_ssh_addr(ssh_line)
-        scp_cmd = utils.scp_str.format(dsb_zip_path,
-                                       uid,
-                                       addr_only,
-                                       '~/' + zip_file_name)
-        procs_list.append(subprocess.Popen(scp_cmd.split()))
-    for proc in procs_list:
-        proc.wait()
-
-    procs_list.clear()
-    for ssh_line in node_ssh_lines:
-        addr_only = utils.extract_ssh_addr(ssh_line)
-        ssh_cmd = utils.ssh_str.format(uid, addr_only)
-        unzip_cmd = utils.unzip_str.format('~/' + zip_file_name)
-        procs_list.append(subprocess.Popen(ssh_cmd.split() + [unzip_cmd]))
-    for proc in procs_list:
-        proc.wait()
-
     # Copy scripts and install dependencies on all nodes
-    logger.info('copying setup scripts for specified nodes')
-    procs_list.clear()
+    logger.info('Copying scripts and installing dependencies for specified nodes...')
+    procs_list = []
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        scp_cmd = utils.scp_str.format('../setup.sh',
-                                       uid,
-                                       addr_only,
-                                       '~/setup.sh')
-        procs_list.append(subprocess.Popen(scp_cmd.split()))
+        scp_cmd_setup = utils.scp_str.format('../setup.sh',
+                                             uid,
+                                             addr_only,
+                                             '~/setup.sh')
+        procs_list.append(subprocess.Popen(scp_cmd_setup.split()))
+
+        scp_cmd_env = utils.scp_str.format('../env.sh',
+                                           uid,
+                                           addr_only,
+                                           '~/env.sh')
+        procs_list.append(subprocess.Popen(scp_cmd_env.split()))
+
+        scp_cmd_scripts = utils.scp_r_str.format('../scripts',
+                                                 uid,
+                                                 addr_only,
+                                                 '~/scripts')
+        procs_list.append(subprocess.Popen(scp_cmd_scripts.split()))
+
+        scp_cmd_dotfiles = utils.scp_r_str.format('../dotfiles',
+                                                  uid,
+                                                  addr_only,
+                                                  '~/dotfiles')
+        procs_list.append(subprocess.Popen(scp_cmd_dotfiles.split()))
     for proc in procs_list:
         proc.wait()
 
+    # Run ./env.sh on each node
+    logger.info('Running ./env.sh on each node...')
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
-        scp_cmd = utils.scp_r_str.format('../scripts',
-                                         uid,
-                                         addr_only,
-                                         '~/scripts')
-        procs_list.append(subprocess.Popen(scp_cmd.split()))
+        ssh_cmd = utils.ssh_str.format(uid, addr_only)
+        env_cmd = 'cd ~/ ; yes | ./env.sh'
+        procs_list.append(subprocess.Popen(ssh_cmd.split() + [env_cmd]))
     for proc in procs_list:
         proc.wait()
 
-    # Since ./setup.sh takes a while, run in parallel and wait
-    logger.info('running setup scripts in parallel for specified nodes')
+    # Run ./setup.sh on each node
+    logger.info('Running ./setup.sh on each node...')
     procs_list.clear()
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
@@ -113,7 +184,18 @@ def setup_application(application_name, replace_zip, node_ssh_list):
     for proc in procs_list:
         proc.wait()
 
-    logger.info('Set up ' + application_name_upper + ' on all Docker Swarm nodes successfully')
+    # Since ./setup.sh takes a while, run in parallel and wait
+    #logger.info('running setup scripts in parallel for specified nodes')
+    #procs_list.clear()
+    #for ssh_line in node_ssh_lines:
+    #    addr_only = utils.extract_ssh_addr(ssh_line)
+    #    ssh_cmd = utils.ssh_str.format(uid, addr_only)
+    #    setup_cmd = 'cd ~/ ; yes | ./setup.sh'
+    #    procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]))
+    #for proc in procs_list:
+    #    proc.wait()
+
+    logger.info('Set up all nodes successfuly.')
     logger.info('----------------')
 
 
@@ -172,6 +254,8 @@ def join_docker_swarm(node_ssh_list, manager_addr):
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
         ssh_cmd = utils.ssh_str.format(uid, addr_only)
+        print("ssh_cmd: " +        str(ssh_cmd))
+        print("swarm_join_cmd: " + str(swarm_join_cmd))
         subprocess.Popen(ssh_cmd.split() + [swarm_join_cmd]).wait()
 
     logger.info('All nodes have joined Docker Swarm successfully')
@@ -407,10 +491,14 @@ def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
 
     # Setting up DeathStarBench applications on CloudLab nodes
-    parser.add_argument('--setup-application',
-                        dest='setup_application',
+    #parser.add_argument('--setup-application',
+    #                    dest='setup_application',
+    #                    action='store_true',
+    #                    help='specify arg to setup specified application')
+    parser.add_argument('--setup-nodes',
+                        dest='setup_nodes',
                         action='store_true',
-                        help='specify arg to setup specified application')
+                        help='specify arg to setup specified specified CloudLab nodes')
     parser.add_argument('--application-name',
                         dest='application_name',
                         type=str,
@@ -543,12 +631,17 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
 
-    if args.setup_application:
-        if args.application_name is None:
-            raise ValueError('application name must be provided for application setup')
+    #if args.setup_application:
+    #    if args.application_name is None:
+    #        raise ValueError('application name must be provided for application setup')
+    #    if args.node_ssh_list is None:
+    #        raise ValueError('must provide file containing CloudLab ssh node info for application setup')
+    #    setup_application(args.application_name, args.replace_zip, args.node_ssh_list)
+
+    if args.setup_nodes:
         if args.node_ssh_list is None:
-            raise ValueError('must provide file containing CloudLab ssh node info for application setup')
-        setup_application(args.application_name, args.replace_zip, args.node_ssh_list)
+            raise ValueError('must provide CloudLab node ssh information for node setup')
+        setup_nodes(args.node_ssh_list)
 
     if args.setup_docker_swarm:
         setup_docker_swarm()
