@@ -69,6 +69,6 @@ python3 main.py --setup-application --application-name hotelreservation_grpc --n
     ../wrk2/wrk -D exp -t 50 -c 50 -d 30s -L -s ./wrk2/scripts/social-network/compose-post.lua http://localhost:8080/wrk2-api/post/compose -R 500
   
   # AUTOMATED CMDS
-    python3 main.py --start-application --manager-addr clnode150.clemson.cloudlab.us --application-name socialNetwork --docker-compose-file docker-compose-swarm.yml
+    python3 main.py --start-application --manager-addr clnode150.clemson.cloudlab.us --application-name socialNetwork --docker-compose-file docker-compose-swarm.yml --app-init-opts ego-twitter
 
   python3 main.py --leave-docker-swarm --node-ssh-list c6320_24.txt --manager-addr clnode150.clemson.cloudlab.us

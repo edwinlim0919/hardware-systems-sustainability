@@ -201,8 +201,9 @@ def label_docker_swarm(node_ssh_list):
     logger.info('----------------')
 
 
-def start_application(manager_addr, application_name, docker_compose_file, nodes_pinned):
+def start_application(manager_addr, application_name, docker_compose_file, nodes_pinned, app_init_opts):
     uid = os.getlogin()
+    scripts_dir = os.getcwd()
     ssh_cmd = utils.ssh_str.format(uid, manager_addr)
     application_name_upper = application_name.upper()
     logger.info('----------------')
@@ -222,11 +223,14 @@ def start_application(manager_addr, application_name, docker_compose_file, nodes
     else:
         # X amount of nodes, swarm master node can be colocated with other services (automatic placement)
         manager_dsb_path = application_info['manager_dsb_path']
-        application_deploy_cmd = utils.application_deploy_str.format(docker_compose_file, docker_name)
-        #print('application_deploy_cmd: ' + application_deploy_cmd)
-        scripts_dir = os.getcwd()
         os.chdir(manager_dsb_path)
+        application_deploy_cmd = utils.application_deploy_str.format(docker_compose_file, docker_name)
         subprocess.Popen(application_deploy_cmd.split()).wait()
+
+        # Register users and construct social graphs
+        application_init_cmd = application_info['app_init'].format(app_init_opts.split(','))
+        subprocess.Popen(application_init_cmd.split()).wait()
+
         os.chdir(scripts_dir)
 
     logger.info(application_name_upper + ' successfully deployed')
@@ -427,6 +431,10 @@ def get_args():
                         dest='docker_compose_file',
                         type=str,
                         help='provide name of docker-compose-swarm yml file within hardware-systems-sustainability/configs containing swarm node mappings')
+    parser.add_argument('--app-init-opts',
+                        dest='app_init_opts',
+                        type=str,
+                        help='provide comma-separated list of any options for initializing the specified application')
     # Running workload generator
     parser.add_argument('--run-workload-generator',
                         dest='run_workload_generator',
@@ -539,10 +547,13 @@ if __name__ == '__main__':
             raise ValueError('application name must be provided for starting the application')
         if args.docker_compose_file is None:
             raise ValueError('must provide name of Docker Swarm yml within hardware-systems-sustainability/configs')
+        if args.app_init_opts is None:
+            raise ValueError('must provide any options for initialization application state')
         start_application(args.manager_addr,
                           args.application_name,
                           args.docker_compose_file,
-                          args.nodes_pinned)
+                          args.nodes_pinned,
+                          args.app_init_opts)
 
     if args.run_workload_generator:
         if args.wrkgen_addr is None:

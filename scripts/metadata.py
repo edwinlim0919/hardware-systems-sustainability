@@ -14,6 +14,7 @@ application_info = {
     'SOCIALNETWORK' : {
         'manager_dsb_path' : '/dev/shm/hardware-systems-sustainability/DeathStarBench/socialNetwork',
         'worker_dsb_path'  : '/users/{0}/DeathStarBench/socialNetwork',
-        'docker_name'      : 'socialNetwork'
+        'docker_name'      : 'socialNetwork',
+        'app_init'         : 'python3 scripts/init_social_graph.py --graph={0[0]}'
     }
 }
