@@ -141,19 +141,16 @@ def setup_nodes(node_ssh_list):
                                              addr_only,
                                              '~/setup.sh')
         procs_list.append(subprocess.Popen(scp_cmd_setup.split()))
-
         scp_cmd_env = utils.scp_str.format('../env.sh',
                                            uid,
                                            addr_only,
                                            '~/env.sh')
         procs_list.append(subprocess.Popen(scp_cmd_env.split()))
-
         scp_cmd_scripts = utils.scp_r_str.format('../scripts',
                                                  uid,
                                                  addr_only,
                                                  '~/scripts')
         procs_list.append(subprocess.Popen(scp_cmd_scripts.split()))
-
         scp_cmd_dotfiles = utils.scp_r_str.format('../dotfiles',
                                                   uid,
                                                   addr_only,
@@ -183,17 +180,6 @@ def setup_nodes(node_ssh_list):
         procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]))
     for proc in procs_list:
         proc.wait()
-
-    # Since ./setup.sh takes a while, run in parallel and wait
-    #logger.info('running setup scripts in parallel for specified nodes')
-    #procs_list.clear()
-    #for ssh_line in node_ssh_lines:
-    #    addr_only = utils.extract_ssh_addr(ssh_line)
-    #    ssh_cmd = utils.ssh_str.format(uid, addr_only)
-    #    setup_cmd = 'cd ~/ ; yes | ./setup.sh'
-    #    procs_list.append(subprocess.Popen(ssh_cmd.split() + [setup_cmd]))
-    #for proc in procs_list:
-    #    proc.wait()
 
     logger.info('Set up all nodes successfuly.')
     logger.info('----------------')
@@ -254,8 +240,6 @@ def join_docker_swarm(node_ssh_list, manager_addr):
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
         ssh_cmd = utils.ssh_str.format(uid, addr_only)
-        print("ssh_cmd: " +        str(ssh_cmd))
-        print("swarm_join_cmd: " + str(swarm_join_cmd))
         subprocess.Popen(ssh_cmd.split() + [swarm_join_cmd]).wait()
 
     logger.info('All nodes have joined Docker Swarm successfully')

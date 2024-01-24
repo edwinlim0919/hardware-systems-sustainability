@@ -61,7 +61,7 @@ python3 main.py --setup-application --application-name hotelreservation_grpc --n
 # No node-pinning setup commands
   python3 main.py --setup-nodes --node-ssh-list c6320_24.txt
   python3 main.py --setup-docker-swarm
-  python3 main.py --join-docker-swarm --node-ssh-list c6320_24.txt --manager-addr clnode154.clemson.cloudlab.us
+  python3 main.py --join-docker-swarm --node-ssh-list c6320_24.txt --manager-addr clnode150.clemson.cloudlab.us
   
   # MANUAL CMDS
     sudo docker stack deploy --compose-file=docker-compose-swarm.yml socialNetwork
