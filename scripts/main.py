@@ -136,6 +136,7 @@ def join_docker_swarm(node_ssh_list, manager_addr):
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
         ssh_cmd = utils.ssh_str.format(uid, addr_only)
+        logger.info(addr_only)
         subprocess.Popen(ssh_cmd.split() + [swarm_join_cmd]).wait()
 
     logger.info('All nodes have joined Docker Swarm successfully')
@@ -167,13 +168,11 @@ def leave_docker_swarm(node_ssh_list, manager_addr):
     node_ssh_lines_manager = full_line.strip()
 
     uid = os.getlogin()
-    procs_list = []
     for ssh_line in node_ssh_lines:
         addr_only = utils.extract_ssh_addr(ssh_line)
         ssh_cmd = utils.ssh_str.format(uid, addr_only)
-        procs_list.append(subprocess.Popen(ssh_cmd.split() + [swarm_leave_cmd]))
-    for proc in procs_list:
-        proc.wait()
+        logger.info(addr_only)
+        subprocess.Popen(ssh_cmd.split() + [swarm_leave_cmd]).wait()
     logger.info('All worker nodes left!')
 
     subprocess.Popen(node_ssh_lines_manager.split() + [swarm_leave_cmd]).wait()
@@ -219,7 +218,7 @@ def start_application(manager_addr, application_name, docker_compose_file, nodes
         # TODO: Does not work currently (make it work)
         #application_deploy_cmd = utils.application_deploy_str.format(docker_compose_file, application_name)
         #subprocess.Popen(ssh_cmd.split() + [cd_cmd] + ['&&'] + [application_deploy_cmd]).wait()
-        print('AY CARAMBA!!!')
+        logger.info('AY CARAMBA!!!')
     else:
         # X amount of nodes, swarm master node can be colocated with other services (automatic placement)
         manager_dsb_path = application_info['manager_dsb_path']
