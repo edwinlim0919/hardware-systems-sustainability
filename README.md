@@ -1,7 +1,7 @@
 # Sustainable Hardware Heterogeneity
 Usable scripting for running DeathStarBench applications on CloudLab.
 
-### Base Setup
+# Base Setup
 First, ssh into your CloudLab master node with the -A option to cache public keys in your ssh-agent. An example is shown below, but you will need your own CloudLab account and experiment cluster.
 ```bash
 ssh -A edwinlim@ms0415.utah.cloudlab.us
@@ -28,7 +28,7 @@ You may need to log out of the node and log back in to see env changes take effe
 source ./setup.sh
 ```
 
-### Deep Learning Sustainability Setup
+# Deep Learning Sustainability
 This is for running various DL pipelines in Ray for sustainable DL cluster design insights.
 Press "y" and enter whenever prompted.
 ```bash
@@ -39,7 +39,7 @@ source ./setup.sh
 ## Setting up Ray pipelines
 TODO
 
-### DeathStarBench DC Acceleration Profiling
+# DeathStarBench DC Acceleration Profiling
 This is for running DeathStarBench with various CloudLab infrastructure and profiling scripts.
 Once cloned, initialize the DeathStarBench submodule.
 ```bash
