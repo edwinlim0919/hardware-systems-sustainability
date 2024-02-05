@@ -1,7 +1,7 @@
 # Sustainable Hardware Heterogeneity
 Usable scripting for running DeathStarBench applications on CloudLab.
 
-## Base Setup
+### Base Setup
 First, ssh into your CloudLab master node with the -A option to cache public keys in your ssh-agent. An example is shown below, but you will need your own CloudLab account and experiment cluster.
 ```bash
 ssh -A edwinlim@ms0415.utah.cloudlab.us
@@ -28,16 +28,24 @@ You may need to log out of the node and log back in to see env changes take effe
 source ./setup.sh
 ```
 
-## DeathStarBench DC Acceleration Profiling Setup
+### Deep Learning Sustainability Setup
+This is for running various DL pipelines in Ray for sustainable DL cluster design insights.
+Press "y" and enter whenever prompted.
+```bash
+cd hardware-systems-sustainability/sustainable-deep-learning
+source ./setup.sh
+```
+
+## Setting up Ray pipelines
+TODO
+
+### DeathStarBench DC Acceleration Profiling
 This is for running DeathStarBench with various CloudLab infrastructure and profiling scripts.
 Once cloned, initialize the DeathStarBench submodule.
 ```bash
 git submodule init DeathStarBench/
 git submodule update --init
 ```
-
-## Deep Learning Sustainability Setup
-This is for running various DL pipelines in Ray for sustainable DL cluster design insights.
 
 ## Setting up an application across CloudLab nodes
 First, you will need to make an .txt file in hardware-systems-sustainability/node-ssh-lists such as c6320_24.txt, which contains the ssh command for each node in your CloudLab experiment, as well as node label such as node<x>. You should just order these in increasing number for simplicity, and they correspond to placement constraints in the docker-compose-swarm.yml files within hardware-systems-sustainability/configs. Here is an example for a 24 node cluster (you will need to use your own cloudlab uid instead of edwinlim):
