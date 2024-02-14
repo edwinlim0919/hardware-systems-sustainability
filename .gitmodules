@@ -1,3 +1,6 @@
 [submodule "DeathStarBench"]
 	path = DeathStarBench
         url = git@github.com:edwinlim0919/DeathStarBench.git
+[submodule "sustainable-deep-learning/neural-speed"]
+	path = sustainable-deep-learning/neural-speed
+	url = git@github.com:intel/neural-speed.git
