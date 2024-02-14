@@ -15,24 +15,24 @@ cd hardware-systems-sustainability
 ```
 
 Next, set up some bash environment stuff.
-Press "y" and enter whenever prompted.
+Press "y" or "enter" whenever prompted.
 You may need to log out of the node and log back in to see env changes take affect.
 ```bash
 source ./env.sh
 ```
 
 Next, install some basic dependencies.
-Press "y" and enter whenever prompted.
+Press "y" or "enter" whenever prompted.
 You may need to log out of the node and log back in to see env changes take effect.
 ```bash
 source ./setup.sh
 ```
 
-# Deep Learning Sustainability
-This is for running various DL pipelines in Ray for sustainable DL cluster design insights.
-Press "y" and enter whenever prompted.
+## Setting up conda
+Run the setup.sh script in hardware-systems-sustainability/sustainable-deep-learning.
+Press "y" or "enter" whenever prompted.
+cd hardware-systems-sustainability/
 ```bash
-cd hardware-systems-sustainability/sustainable-deep-learning
 source ./setup.sh
 ```
 
