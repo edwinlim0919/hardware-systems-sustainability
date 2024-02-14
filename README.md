@@ -29,7 +29,7 @@ source ./setup.sh
 ```
 
 # Sustainable Deep Learning Setup
-## Setting up conda
+## Setting up conda environments
 Run the setup.sh script in hardware-systems-sustainability/sustainable-deep-learning.
 Press "y" or "enter" whenever prompted.
 cd hardware-systems-sustainability/
@@ -37,7 +37,10 @@ cd hardware-systems-sustainability/
 source ./setup.sh
 ```
 
-## Setting up Ray pipelines
+## Intel transformers extension CPU Inference
+TODO
+
+## Ray pipelines
 TODO
 
 # DeathStarBench DC Acceleration Profiling Setup (currently probably doesn't work)
