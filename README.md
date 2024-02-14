@@ -28,6 +28,7 @@ You may need to log out of the node and log back in to see env changes take effe
 source ./setup.sh
 ```
 
+# Sustainable Deep Learning Setup
 ## Setting up conda
 Run the setup.sh script in hardware-systems-sustainability/sustainable-deep-learning.
 Press "y" or "enter" whenever prompted.
@@ -39,7 +40,7 @@ source ./setup.sh
 ## Setting up Ray pipelines
 TODO
 
-# DeathStarBench DC Acceleration Profiling
+# DeathStarBench DC Acceleration Profiling Setup (currently probably doesn't work)
 This is for running DeathStarBench with various CloudLab infrastructure and profiling scripts.
 Once cloned, initialize the DeathStarBench submodule.
 ```bash
