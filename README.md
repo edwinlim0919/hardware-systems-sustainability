@@ -39,6 +39,7 @@ source ./setup.sh
 
 ## Intel transformers extension CPU Inference
 TODO
+NOTE: for neural-speed submodule, need to change torch==2.1.0+cpu to torch==2.2.0+cpu to resolve dependencies
 
 ## Ray pipelines
 TODO
