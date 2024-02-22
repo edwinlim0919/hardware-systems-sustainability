@@ -43,6 +43,8 @@ NOTE: for neural-speed submodule, need to change torch==2.1.0+cpu to torch==2.2.
 ```bash
 cd hardware-systems-sustainability/intel-transformers-cpu
 source ./setup.sh
+cd hardware-systems-systainability/infra_scripts
+conda env export > environment.yaml
 ```
 
 ## Ray pipelines
