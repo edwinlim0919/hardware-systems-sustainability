@@ -32,14 +32,18 @@ source ./setup.sh
 ## Setting up conda environments
 Run the setup.sh script in hardware-systems-sustainability/sustainable-deep-learning.
 Press "y" or "enter" whenever prompted.
-cd hardware-systems-sustainability/
 ```bash
+cd hardware-systems-sustainability/
 source ./setup.sh
 ```
 
 ## Intel transformers extension CPU Inference
 TODO
 NOTE: for neural-speed submodule, need to change torch==2.1.0+cpu to torch==2.2.0+cpu to resolve dependencies
+```bash
+cd hardware-systems-sustainability/intel-transformers-cpu
+source ./setup.sh
+```
 
 ## Ray pipelines
 TODO
