@@ -28,6 +28,11 @@ You may need to log out of the node and log back in to see env changes take effe
 source ./setup.sh
 ```
 
+Alternatively, you can do both of the above in one step.
+```bash
+yes | source ./env.sh && yes | source ./setup.sh
+```
+
 # Sustainable Deep Learning Setup
 ## Setting up conda environments
 Run the setup.sh script in hardware-systems-sustainability/sustainable-deep-learning.
