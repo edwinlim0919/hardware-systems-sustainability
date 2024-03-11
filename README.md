@@ -38,7 +38,7 @@ yes | source ./env.sh && yes | source ./setup.sh
 Run the setup.sh script in hardware-systems-sustainability/sustainable-deep-learning.
 Press "y" or "enter" whenever prompted.
 ```bash
-cd hardware-systems-sustainability/
+cd hardware-systems-sustainability/sustainable-deep-learning
 source ./setup.sh
 ```
 
