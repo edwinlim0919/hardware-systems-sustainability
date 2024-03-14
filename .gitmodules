@@ -7,3 +7,6 @@
 [submodule "sustainable-deep-learning/llama.cpp"]
 	path = sustainable-deep-learning/llama.cpp
 	url = git@github.com:ggerganov/llama.cpp.git
+[submodule "sustainable-deep-learning/intel-transformers-cpu/pcm"]
+	path = sustainable-deep-learning/intel-transformers-cpu/pcm
+	url = git@github.com:intel/pcm.git
